@@ -201,27 +201,6 @@ $$\text{Academic Standing} = \begin{cases}
 
 $$\text{Graduation Requirement (R43)} \iff \text{Earned Hours} \ge 120 \quad \land \quad \text{CGPA} \ge 2.00$$
 
----
-
-## 📊 LINQ Academic Analytics & Intelligence (FR-12)
-
-The system includes **12 enterprise LINQ reports**:
-
-1. **`RPT-01` Students by College:** Multi-level group by university faculties.
-2. **`RPT-02` Students by Department:** Departmental density and demographic breakdown.
-3. **`RPT-03` Courses by Department:** Complete curriculum maps ordered by academic level.
-4. **`RPT-04` Students in Course:** Cross-section roster of all students enrolled in a subject.
-5. **`RPT-05` Courses Taught by Instructor:** Faculty academic loads and assigned lecture slots.
-6. **`RPT-06` Students Who Failed a Course:** Academic triage report identifying struggling students ($\text{Total} < 60$).
-7. **`RPT-07` Top 10 Students by CGPA:** University Honor Roll leaderboard.
-8. **`RPT-08` Student Official Transcript:** Full term-by-term academic history with GPA progression.
-9. **`RPT-09` Semester GPA Report:** Batch semester evaluation across cohorts.
-10. **`RPT-10` Cumulative GPA University Audit:** Institutional academic standing and probation tracker.
-11. **`RPT-11` Available Sections:** Live seat availability for course registration counseling.
-12. **`RPT-12` Full Section Roster:** Official attendance, midterm, practical, and final grade sheet.
-
----
-
 ## 👥 Team Work Breakdown Structure (WBS)
 
 ```
