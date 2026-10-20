@@ -1,0 +1,168 @@
+﻿أنا أعمل على مشروع C# Console Application لمشروع التخرج، وأستخدم مكتبة Spectre.Console لتنسيق الواجهات والطباعة.
+
+المطلوب:
+قم بإعادة صياغة وتعديل كافة دالّات الـ UI والـ Menus والطباعة في الكود المرفق لتتبع نفس الستيل والتنسيق الاحترافي التالي بدقة:
+
+1. الـ Menus الرئيسية والفرعية:
+   - رسم المنيو باستخدام الـ ANSI Escape Sequences والـ Box-Drawing (`║ ╔ ═ ╚`) بحجم أبعاد ثابت ومحسوب للسطر لمنع انكسار الحدود (Text Wrapping).
+   - توحيد نظام ألوان المنيو: عناوين باللون الأصفر، أرقام الخيارات بين أقواس [ ] باللون الأخضر، والنصوص باللون الرمادي/الأبيض، والحدود باللون اللؤلؤي/الساماوي (Cyan).
+
+2. شاشات الإدخال والجداول (Spectre.Console):
+   - استخدام `AnsiConsole.Write(new Rule("[yellow]TITLE[/]").RuleStyle("cyan").LeftJustified());` لعناوين الشاشات الفرعية.
+   - استبدال كافة عمليات الإدخال التقليدية بـ `AnsiConsole.Ask<T>("[green]Prompt Message:[/] ");` مع مراعاة عدم وضع أي الكلمات غير المعرفة داخل أقواس `[]` لتجنب خطأ الـ Style Not Found.
+   - عرض البيانات والقوائم باستخدام `Table` من Spectre.Console مع تفعيل `TableBorder.Rounded` ولون حدود `Color.Cyan1` وبُعد الأوردة التلقائي `table.Expand()`.
+   - تغليف كافة رسائل النجاح والخطأ والتحذيرات داخل `Panel` ملونة (Green للنجاح، Red للخطأ، Yellow للتحذيرات) مع رموز الإشارة (`✓`, `✗`, `⚠`).
+
+إليك الكود الكامل للملف:
+[ضع كود الملف هنا]
+
+------------------------------------------------------------
+========================================
+       UNIVERSITY MANAGEMENT SYSTEM
+========================================
+
+1. College Management
+2. Department Management
+3. Student Management
+4. Instructor Management
+5. Course Management
+6. Semester Management
+7. Classroom Management
+8. Course Section Management
+9. Course Registration
+10. Grade Management
+11. Academic Reports
+12. Search
+0. Exit
+
+Choose:
+
+------------------------------------------------------------
+🏛️ College Management
+1. Add College
+2. View Colleges
+3. Search College
+4. Update College
+5. Delete College
+6. View Departments
+0. Back
+------------------------------------------------------------
+🏢 Department Management
+1. Add Department
+2. View Departments
+3. Search Department
+4. Update Department
+5. Delete Department
+6. View Students
+7. View Courses
+8. View Instructors
+0. Back
+------------------------------------------------------------
+👨‍🎓 Student Management
+1. Add Student
+2. View Students
+3. Search Student
+4. Update Student
+5. Delete Student
+6. View Student Details
+7. View Student Courses
+8. View Academic Record
+0. Back
+------------------------------------------------------------
+👨‍🏫 Instructor Management
+1. Add Instructor
+2. View Instructors
+3. Search Instructor
+4. Update Instructor
+5. Delete Instructor
+6. View Instructor Courses
+0. Back
+------------------------------------------------------------
+📚 Course Management
+1. Add Course
+2. View Courses
+3. Search Course
+4. Update Course
+5. Delete Course
+6. Add Prerequisite
+7. View Prerequisites
+0. Back
+------------------------------------------------------------
+📝 Registration
+وده هيبقى Flow مهم جدًا:
+
+Enter Student ID
+        ↓
+Check Student
+        ↓
+Check Student Status
+        ↓
+Select Semester
+        ↓
+Select Course
+        ↓
+Check Prerequisite
+        ↓
+Check Duplicate Course
+        ↓
+Check Capacity
+        ↓
+Register
+------------------------------------------------------------
+🧮 Grade Management
+1. Enter Grade
+2. Update Grade
+3. View Student Grades
+4. View Course Grades
+5. Calculate GPA
+0. Back
+
+------------------------------------------------------------
+------------------------------------------------------------
+Report 1
+
+Students by College.
+
+Report 2
+
+Students by Department.
+
+Report 3
+
+Courses by Department.
+
+Report 4
+
+Students registered in a Course.
+
+Report 5
+
+Courses taught by Instructor.
+
+Report 6
+
+Students who failed a Course.
+
+Report 7
+
+Top Students.
+
+Report 8
+
+Student Academic Record.
+
+Report 9
+
+Semester GPA.
+
+Report 10
+
+Cumulative GPA.
+
+Report 11
+
+Available Sections.
+
+Report 12
+
+Full Section Roster.
