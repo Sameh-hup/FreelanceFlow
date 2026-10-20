@@ -128,7 +128,7 @@ public bool HasCycle(int courseId, int newPrereqId)
 ### 2. Multi-Dimensional Schedule Collision Engine (R15 - R19)
 Protects against physical and temporal conflicts in lectures across the university:
 
-$$\text{Collision}(A, B) \iff (\text{Start}_A < \text{End}_B) \land (\text{End}_A > \text{Start}_B) \quad \text{on the same day \land semester}$$
+$$\text{Collision}(A, B) \iff (\text{Start}_A < \text{End}_B) \land (\text{End}_A > \text{Start}_B) \quad \text{on the same day  semester}$$
 
 * **Classroom Conflict (R17):** Guarantees that no two sections share the same hall at overlapping times.
 * **Instructor Conflict (R18):** Guarantees that no instructor is booked for multiple lectures simultaneously.
