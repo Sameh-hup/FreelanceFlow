@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+
 using University_Academic.Data;
 using University_Academic.Entities;
 using University_Academic.Enums;
@@ -12,294 +9,1046 @@ namespace University_Academic
     {
         public static void SeedData(UniversityDbContext context)
         {
-            // تأكيد إنشاء قاعدة البيانات
-            context.Database.EnsureCreated();
+            // منع تكرار البذر إذا كانت البيانات مكتملة بالفعل
+            if (HasExistingData(context))
+                return;
 
-            // 1. ==================== الكليات والأقسام (Colleges & Departments) ====================
+            // =========================================================================
+            // 1. الكليات والأقسام الأكاديمية (Colleges & Departments)
+            // =========================================================================
             if (!context.Colleges.Any())
             {
-                var fcit = new College
+                var colleges = new List<College>
                 {
-                    Name = "Faculty of Computers and Information",
-                    Code = "FCIT",
-                    Description = "Leading faculty in computing, artificial intelligence and software engineering."
+                    // 1. كلية الحاسبات والذكاء الاصطناعي
+                    new College
+                    {
+                        Name = "Faculty of Computers and Artificial Intelligence",
+                        Code = "FCAI",
+                        Description = "School of Computing, Software Engineering, and AI Systems.",
+                        Departments = new List<Department>
+                        {
+                            new Department { Name = "Computer Science", Code = "CS", Description = "Algorithms, Software Engineering, and AI fundamentals." },
+                            new Department { Name = "Information Technology", Code = "IT", Description = "Network infrastructure, Cloud Systems, and Web tech." },
+                            new Department { Name = "Information Systems", Code = "IS", Description = "Database Management, ERP Systems, and Data Analytics." },
+                            new Department { Name = "Artificial Intelligence", Code = "AI", Description = "Machine Learning, Computer Vision, and Robotics." },
+                            new Department { Name = "Cybersecurity", Code = "CYBER", Description = "Network Security, Ethical Hacking, and Cryptography." }
+                        }
+                    },
+
+                    // 2. كلية الهندسة
+                    new College
+                    {
+                        Name = "Faculty of Engineering",
+                        Code = "ENG",
+                        Description = "School of Engineering Sciences and Technology.",
+                        Departments = new List<Department>
+                        {
+                            new Department { Name = "Civil Engineering", Code = "CIVIL", Description = "Structural Engineering and Infrastructure." },
+                            new Department { Name = "Mechanical Engineering", Code = "MECH", Description = "Thermodynamics and Mechanical Systems Design." },
+                            new Department { Name = "Electrical Engineering", Code = "ELEC", Description = "Power Networks, Microelectronics, and Telecommunications." },
+                            new Department { Name = "Architecture Engineering", Code = "ARCH", Description = "Architectural Design and Urban Planning." }
+                        }
+                    },
+
+                    // 3. كلية إدارة الأعمال
+                    new College
+                    {
+                        Name = "Faculty of Business Administration",
+                        Code = "BUS",
+                        Description = "School of Business, Finance, and Marketing.",
+                        Departments = new List<Department>
+                        {
+                            new Department { Name = "Accounting", Code = "ACCT", Description = "Financial Accounting, Auditing, and Managerial Control." },
+                            new Department { Name = "Finance & Banking", Code = "FIN", Description = "Financial Markets, Investment Analysis, and Banking Operations." },
+                            new Department { Name = "Marketing", Code = "MKTG", Description = "Digital Marketing, Consumer Behavior, and Brand Management." },
+                            new Department { Name = "Business Information Systems", Code = "BIS", Description = "E-Commerce, Data Driven Business, and ERP Solutions." }
+                        }
+                    },
+
+                    // 4. كلية الطب
+                    new College
+                    {
+                        Name = "Faculty of Medicine",
+                        Code = "MED",
+                        Description = "School of Medical Sciences and Clinical Studies.",
+                        Departments = new List<Department>
+                        {
+                            new Department { Name = "General Surgery", Code = "SURG", Description = "General and Minimally Invasive Surgical Operations." },
+                            new Department { Name = "Pediatrics", Code = "PED", Description = "Healthcare and Medical Management for Children." },
+                            new Department { Name = "Cardiology", Code = "CARD", Description = "Cardiovascular Health and Heart Disease Treatment." },
+                            new Department { Name = "Internal Medicine", Code = "INTMED", Description = "Diagnosis and Prevention of Adult Diseases." }
+                        }
+                    }
                 };
 
-                var eng = new College
-                {
-                    Name = "Faculty of Engineering",
-                    Code = "ENG",
-                    Description = "Excellence in civil, electrical, and systems engineering."
-                };
-
-                var bus = new College
-                {
-                    Name = "Faculty of Business Administration",
-                    Code = "BUS",
-                    Description = "Modern business, accounting, and financial management education."
-                };
-
-                // أقسام كلية الحاسبات
-                var csDept = new Department { Name = "Computer Science", Code = "CS", Description = "Theoretical and applied computer science.", College = fcit };
-                var itDept = new Department { Name = "Information Technology", Code = "IT", Description = "Networks, infrastructure and cyber security.", College = fcit };
-                var isDept = new Department { Name = "Information Systems", Code = "IS", Description = "Enterprise systems and business intelligence.", College = fcit };
-                var sweDept = new Department { Name = "Software Engineering", Code = "SWE", Description = "Modern software architecture and lifecycle.", College = fcit };
-
-                // أقسام كلية التجارة
-                var accDept = new Department { Name = "Accounting", Code = "ACC", Description = "Financial and managerial accounting.", College = bus };
-                var baDept = new Department { Name = "Business Administration", Code = "BA", Description = "Management, leadership, and marketing.", College = bus };
-
-                context.Colleges.AddRange(fcit, eng, bus);
-                context.Departments.AddRange(csDept, itDept, isDept, sweDept, accDept, baDept);
+                context.Colleges.AddRange(colleges);
                 context.SaveChanges();
             }
 
-            // جلب الأقسام للاستخدام في العلاقات اللاحقة
-            var cs = context.Departments.First(d => d.Code == "CS");
-            var it = context.Departments.First(d => d.Code == "IT");
-            var isDep = context.Departments.First(d => d.Code == "IS");
-            var swe = context.Departments.First(d => d.Code == "SWE");
+            // تحميل الأقسام للاستخدام في العلاقات اللاحقة
+            var csDept = context.Departments.First(d => d.Code == "CS");
+            var itDept = context.Departments.First(d => d.Code == "IT");
+            var isDept = context.Departments.First(d => d.Code == "IS");
+            var aiDept = context.Departments.First(d => d.Code == "AI");
+            var mechDept = context.Departments.First(d => d.Code == "MECH");
+            var acctDept = context.Departments.First(d => d.Code == "ACCT");
 
-            // 2. ==================== القاعات والمعامل (Classrooms) ====================
+            // =========================================================================
+            // 2. القاعات الدراسية والمعامل (Classrooms)
+            // =========================================================================
             if (!context.Classrooms.Any())
             {
                 var classrooms = new List<Classroom>
                 {
-                    new() { Building = "Main Building", RoomNumber = "Hall A", Capacity = 150 },
-                    new() { Building = "Main Building", RoomNumber = "Hall B", Capacity = 120 },
-                    new() { Building = "Main Building", RoomNumber = "Room 101", Capacity = 60 },
-                    new() { Building = "Main Building", RoomNumber = "Room 102", Capacity = 60 },
-                    new() { Building = "Main Building", RoomNumber = "Room 201", Capacity = 50 },
-                    new() { Building = "IT Building", RoomNumber = "Lab 1", Capacity = 30 },
-                    new() { Building = "IT Building", RoomNumber = "Lab 2", Capacity = 35 },
-                    new() { Building = "IT Building", RoomNumber = "Network Lab", Capacity = 25 },
-                    new() { Building = "Engineering Hall", RoomNumber = "Auditorium 1", Capacity = 200 },
-                    new() { Building = "Business Block", RoomNumber = "Hall C", Capacity = 80 }
+                    new Classroom { Building = "Building A", RoomNumber = "Hall A", Capacity = 100 },
+                    new Classroom { Building = "Building A", RoomNumber = "Lab 1", Capacity = 30 },
+                    new Classroom { Building = "Building A", RoomNumber = "Room 201", Capacity = 50 },
+                    new Classroom { Building = "Building A", RoomNumber = "Room 202", Capacity = 40 },
+                    new Classroom { Building = "Building B", RoomNumber = "Hall B", Capacity = 80 },
+                    new Classroom { Building = "Building B", RoomNumber = "Lab 2", Capacity = 25 },
+                    new Classroom { Building = "Building B", RoomNumber = "Room 301", Capacity = 60 },
+                    new Classroom { Building = "Engineering Block", RoomNumber = "Eng Hall 1", Capacity = 120 },
+                    new Classroom { Building = "Business Block", RoomNumber = "Bus Hall 1", Capacity = 90 }
                 };
+
                 context.Classrooms.AddRange(classrooms);
                 context.SaveChanges();
             }
 
-            // 3. ==================== الفصول الدراسية (Semesters) ====================
+            var hallA = context.Classrooms.First(c => c.RoomNumber == "Hall A");
+            var hallB = context.Classrooms.First(c => c.RoomNumber == "Hall B");
+            var lab1 = context.Classrooms.First(c => c.RoomNumber == "Lab 1");
+            var lab2 = context.Classrooms.First(c => c.RoomNumber == "Lab 2");
+            var room201 = context.Classrooms.First(c => c.RoomNumber == "Room 201");
+            var room202 = context.Classrooms.First(c => c.RoomNumber == "Room 202");
+
+            // =========================================================================
+            // 3. الفصول الدراسية (Semesters)
+            // =========================================================================
             if (!context.Semesters.Any())
             {
                 var semesters = new List<Semester>
                 {
-                    new() { Name = SemesterName.Fall, AcademicYear = "2024/2025", StartDate = new DateTime(2024, 9, 15), EndDate = new DateTime(2025, 1, 20), Status = SemesterStatus.Completed },
-                    new() { Name = SemesterName.Spring, AcademicYear = "2024/2025", StartDate = new DateTime(2025, 2, 10), EndDate = new DateTime(2025, 6, 20), Status = SemesterStatus.Completed },
-                    new() { Name = SemesterName.Fall, AcademicYear = "2025/2026", StartDate = new DateTime(2025, 9, 15), EndDate = new DateTime(2026, 1, 25), Status = SemesterStatus.Active }
+                    // فصل خريف 2025/2026 منتهي وبه درجات سابقة
+                    new Semester
+                    {
+                        Name = SemesterName.Fall,
+                        AcademicYear = "2025/2026",
+                        StartDate = new DateTime(2025, 10, 1),
+                        EndDate = new DateTime(2026, 1, 31),
+                        Status = SemesterStatus.Completed
+                    },
+                    // فصل ربيع 2025/2026 هو الفصل الفعال والنشط حالياً
+                    new Semester
+                    {
+                        Name = SemesterName.Spring,
+                        AcademicYear = "2025/2026",
+                        StartDate = new DateTime(2026, 2, 15),
+                        EndDate = new DateTime(2026, 6, 30),
+                        Status = SemesterStatus.Active
+                    },
+                    // فصل صيف 2025/2026 فصل قادم لتجهيز الشعب
+                    new Semester
+                    {
+                        Name = SemesterName.Summer,
+                        AcademicYear = "2025/2026",
+                        StartDate = new DateTime(2026, 7, 15),
+                        EndDate = new DateTime(2026, 9, 15),
+                        Status = SemesterStatus.Upcoming
+                    }
                 };
+
                 context.Semesters.AddRange(semesters);
                 context.SaveChanges();
             }
 
-            // 4. ==================== المحاضرون (Instructors) ====================
+            var fallSemester = context.Semesters.First(s => s.Name == SemesterName.Fall && s.AcademicYear == "2025/2026");
+            var springSemester = context.Semesters.First(s => s.Name == SemesterName.Spring && s.AcademicYear == "2025/2026");
+
+            // =========================================================================
+            // 4. أعضاء هيئة التدريس (Instructors)
+            // =========================================================================
             if (!context.Instructors.Any())
             {
                 var instructors = new List<Instructor>
                 {
-                    // قسم CS
-                    new() { FullName = "Dr. Mohamed Ahmed Ali", Email = "m.ahmed@univ.edu", Phone = "01011112222", AcademicTitle = AcademicTitle.Professor, HireDate = new DateTime(2015, 9, 1), Status = InstructorStatus.Active, DepartmentId = cs.DepartmentId },
-                    new() { FullName = "Dr. Sara Hassan Ibrahim", Email = "sara.hassan@univ.edu", Phone = "01022223333", AcademicTitle = AcademicTitle.AssociateProfessor, HireDate = new DateTime(2018, 2, 1), Status = InstructorStatus.Active, DepartmentId = cs.DepartmentId },
-                    new() { FullName = "Dr. Mahmoud Youssef", Email = "m.youssef@univ.edu", Phone = "01033334444", AcademicTitle = AcademicTitle.Lecturer, HireDate = new DateTime(2020, 9, 1), Status = InstructorStatus.Active, DepartmentId = cs.DepartmentId },
-                    new() { FullName = "Eng. Omar Tarek", Email = "omar.tarek@univ.edu", Phone = "01044445555", AcademicTitle = AcademicTitle.TeachingAssistant, HireDate = new DateTime(2022, 10, 1), Status = InstructorStatus.Active, DepartmentId = cs.DepartmentId },
+                    // CS Department Instructors
+                    new Instructor
+                    {
+                        FullName = "Dr. Ahmed Mahmoud",
+                        Email = "ahmed.mahmoud@fcai.edu",
+                        Phone = "01011112222",
+                        AcademicTitle = AcademicTitle.AssociateProfessor,
+                        HireDate = new DateTime(2018, 9, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Dr. Khaled Hassan",
+                        Email = "khaled.hassan@fcai.edu",
+                        Phone = "01022223333",
+                        AcademicTitle = AcademicTitle.Professor,
+                        HireDate = new DateTime(2015, 8, 15),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Dr. Adel Ibrahim",
+                        Email = "adel.ibrahim@fcai.edu",
+                        Phone = "01033334444",
+                        AcademicTitle = AcademicTitle.Lecturer,
+                        HireDate = new DateTime(2020, 2, 1),
+                        Status = InstructorStatus.Resigned, // مستقيل لاختبار حالات الاستقالة
+                        DepartmentId = csDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Eng. Mostafa Kamel",
+                        Email = "mostafa.kamel@fcai.edu",
+                        Phone = "01044445555",
+                        AcademicTitle = AcademicTitle.TeachingAssistant,
+                        HireDate = new DateTime(2022, 10, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
 
-                    // قسم IT
-                    new() { FullName = "Dr. Mona El-Sayed", Email = "mona.elsayed@univ.edu", Phone = "01112223334", AcademicTitle = AcademicTitle.Professor, HireDate = new DateTime(2016, 9, 1), Status = InstructorStatus.Active, DepartmentId = it.DepartmentId },
-                    new() { FullName = "Dr. Khaled Abdelrahman", Email = "khaled.a@univ.edu", Phone = "01123334445", AcademicTitle = AcademicTitle.AssociateProfessor, HireDate = new DateTime(2019, 3, 1), Status = InstructorStatus.Active, DepartmentId = it.DepartmentId },
-                    new() { FullName = "Eng. Nourhan Mostafa", Email = "nourhan.m@univ.edu", Phone = "01134445556", AcademicTitle = AcademicTitle.TeachingAssistant, HireDate = new DateTime(2023, 1, 15), Status = InstructorStatus.Active, DepartmentId = it.DepartmentId },
+                    // IT Department Instructors
+                    new Instructor
+                    {
+                        FullName = "Dr. Mona Khalil",
+                        Email = "mona.khalil@fcai.edu",
+                        Phone = "01055556666",
+                        AcademicTitle = AcademicTitle.AssistantProfessor,
+                        HireDate = new DateTime(2019, 1, 15),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = itDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Eng. Tarek Sayed",
+                        Email = "tarek.sayed@fcai.edu",
+                        Phone = "01066667777",
+                        AcademicTitle = AcademicTitle.Lecturer,
+                        HireDate = new DateTime(2021, 9, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = itDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Dr. Hoda Samir",
+                        Email = "hoda.samir@fcai.edu",
+                        Phone = "01077778888",
+                        AcademicTitle = AcademicTitle.AssociateProfessor,
+                        HireDate = new DateTime(2017, 3, 1),
+                        Status = InstructorStatus.OnLeave, // في إجازة
+                        DepartmentId = itDept.DepartmentId
+                    },
 
-                    // قسم IS
-                    new() { FullName = "Dr. Hany Mostafa Kamel", Email = "hany.kamel@univ.edu", Phone = "01211114444", AcademicTitle = AcademicTitle.Professor, HireDate = new DateTime(2014, 9, 1), Status = InstructorStatus.Active, DepartmentId = isDep.DepartmentId },
-                    new() { FullName = "Dr. Rania Adel", Email = "rania.adel@univ.edu", Phone = "01222225555", AcademicTitle = AcademicTitle.Lecturer, HireDate = new DateTime(2021, 9, 1), Status = InstructorStatus.Active, DepartmentId = isDep.DepartmentId },
+                    // IS Department Instructor
+                    new Instructor
+                    {
+                        FullName = "Dr. Sara Fouad",
+                        Email = "sara.fouad@fcai.edu",
+                        Phone = "01088889999",
+                        AcademicTitle = AcademicTitle.Lecturer,
+                        HireDate = new DateTime(2020, 11, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = isDept.DepartmentId
+                    },
 
-                    // قسم SWE
-                    new() { FullName = "Dr. Tamer Samir", Email = "tamer.samir@univ.edu", Phone = "01233336666", AcademicTitle = AcademicTitle.AssociateProfessor, HireDate = new DateTime(2017, 8, 1), Status = InstructorStatus.Active, DepartmentId = swe.DepartmentId },
-                    new() { FullName = "Dr. Adel Mansour (On Leave)", Email = "adel.m@univ.edu", Phone = "01244447777", AcademicTitle = AcademicTitle.Lecturer, HireDate = new DateTime(2018, 9, 1), Status = InstructorStatus.OnLeave, DepartmentId = cs.DepartmentId }
+                    // AI Department Instructor
+                    new Instructor
+                    {
+                        FullName = "Dr. Yasser Zaki",
+                        Email = "yasser.zaki@fcai.edu",
+                        Phone = "01099990000",
+                        AcademicTitle = AcademicTitle.Professor,
+                        HireDate = new DateTime(2016, 5, 10),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = aiDept.DepartmentId
+                    },
+
+                    // Other Colleges Instructors
+                    new Instructor
+                    {
+                        FullName = "Dr. Tamer Nabil",
+                        Email = "tamer.nabil@eng.edu",
+                        Phone = "01111223344",
+                        AcademicTitle = AcademicTitle.AssociateProfessor,
+                        HireDate = new DateTime(2018, 7, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = mechDept.DepartmentId
+                    },
+                    new Instructor
+                    {
+                        FullName = "Dr. Salma Ezzat",
+                        Email = "salma.ezzat@bus.edu",
+                        Phone = "01222334455",
+                        AcademicTitle = AcademicTitle.AssistantProfessor,
+                        HireDate = new DateTime(2019, 9, 1),
+                        Status = InstructorStatus.Active,
+                        DepartmentId = acctDept.DepartmentId
+                    }
                 };
+
                 context.Instructors.AddRange(instructors);
+                context.SaveChanges();
+
+                // تعيين رؤساء الأقسام (ChairPersons)
+                var drKhaled = context.Instructors.First(i => i.Email == "khaled.hassan@fcai.edu");
+                var drMona = context.Instructors.First(i => i.Email == "mona.khalil@fcai.edu");
+                var drSara = context.Instructors.First(i => i.Email == "sara.fouad@fcai.edu");
+
+                csDept.ChairPersonId = drKhaled.InstructorId;
+                itDept.ChairPersonId = drMona.InstructorId;
+                isDept.ChairPersonId = drSara.InstructorId;
                 context.SaveChanges();
             }
 
-            // 5. ==================== المقررات والمتطلبات (Courses & Prerequisites) ====================
+            var drAhmed = context.Instructors.First(i => i.Email == "ahmed.mahmoud@fcai.edu");
+            var drKhaledCS = context.Instructors.First(i => i.Email == "khaled.hassan@fcai.edu");
+            var engMostafa = context.Instructors.First(i => i.Email == "mostafa.kamel@fcai.edu");
+            var drMonaIT = context.Instructors.First(i => i.Email == "mona.khalil@fcai.edu");
+            var engTarekIT = context.Instructors.First(i => i.Email == "tarek.sayed@fcai.edu");
+            var drSaraIS = context.Instructors.First(i => i.Email == "sara.fouad@fcai.edu");
+            var drYasserAI = context.Instructors.First(i => i.Email == "yasser.zaki@fcai.edu");
+
+            // =========================================================================
+            // 5. المقررات وشجرة المتطلبات السابقة (Courses & Prerequisites)
+            // =========================================================================
             if (!context.Courses.Any())
             {
                 var courses = new List<Course>
                 {
-                    // سنة أولى
-                    new() { Code = "CS101", Name = "Introduction to Programming", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "MATH101", Name = "Calculus I", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "IT101", Name = "Introduction to Information Technology", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = it.DepartmentId },
-                    new() { Code = "IS101", Name = "Principles of Information Systems", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = isDep.DepartmentId },
+                    // CS Courses
+                    new Course { Code = "CS101", Name = "Introduction to Programming", Description = "Basics of C# and OOP.", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = csDept.DepartmentId },
+                    new Course { Code = "CS102", Name = "Data Structures", Description = "Arrays, Lists, Stacks, Queues, Trees.", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = csDept.DepartmentId },
+                    new Course { Code = "CS201", Name = "Design and Analysis of Algorithms", Description = "Sorting, Searching, Greedy, DP.", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = csDept.DepartmentId },
+                    new Course { Code = "CS301", Name = "Artificial Intelligence", Description = "Search algorithms, Knowledge representation, Expert systems.", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = csDept.DepartmentId },
+                    new Course { Code = "CS401", Name = "Distributed Systems", Description = "RPC, Microservices, and Consensus algorithms.", CreditHours = 3, Level = AcademicLevel.FourthYear, DepartmentId = csDept.DepartmentId },
 
-                    // سنة ثانية
-                    new() { Code = "CS102", Name = "Object-Oriented Programming (OOP)", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "CS201", Name = "Data Structures & Algorithms", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "IT201", Name = "Database Systems I", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = it.DepartmentId },
-                    new() { Code = "IT202", Name = "Computer Networks Fundamentals", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = it.DepartmentId },
+                    // IT Courses
+                    new Course { Code = "IT101", Name = "Computer Networks Fundamentals", Description = "OSI, TCP/IP, Routing, Switching.", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = itDept.DepartmentId },
+                    new Course { Code = "IT201", Name = "Database Systems 1", Description = "Relational Model, SQL, Normalization.", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = itDept.DepartmentId },
+                    new Course { Code = "IT301", Name = "Advanced Database Systems", Description = "Indexing, Transactions, NoSQL.", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = itDept.DepartmentId },
+                    new Course { Code = "IT302", Name = "Cloud Computing Architecture", Description = "IaaS, PaaS, SaaS, Docker, Kubernetes.", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = itDept.DepartmentId },
 
-                    // سنة ثالثة
-                    new() { Code = "CS301", Name = "Algorithms Analysis & Design", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "CS302", Name = "Operating Systems", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "IT301", Name = "Advanced Database Systems", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = it.DepartmentId },
-                    new() { Code = "SWE301", Name = "Software Engineering Principles", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = swe.DepartmentId },
+                    // IS Courses
+                    new Course { Code = "IS101", Name = "Fundamentals of Information Systems", Description = "Business processes and Information management.", CreditHours = 3, Level = AcademicLevel.FirstYear, DepartmentId = isDept.DepartmentId },
+                    new Course { Code = "IS201", Name = "Systems Analysis and Design", Description = "Agile, UML, System Architecture.", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = isDept.DepartmentId },
+                    new Course { Code = "IS301", Name = "Enterprise Resource Planning (ERP)", Description = "ERP integration and business workflows.", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = isDept.DepartmentId },
 
-                    // سنة رابعة
-                    new() { Code = "CS401", Name = "Artificial Intelligence & Machine Learning", CreditHours = 3, Level = AcademicLevel.FourthYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "CS499", Name = "Graduation Capstone Project", CreditHours = 6, Level = AcademicLevel.FourthYear, DepartmentId = cs.DepartmentId },
-                    new() { Code = "IT401", Name = "Cloud Computing & DevOps", CreditHours = 3, Level = AcademicLevel.FourthYear, DepartmentId = it.DepartmentId }
+                    // AI Courses
+                    new Course { Code = "AI201", Name = "Machine Learning Fundamentals", Description = "Supervised and Unsupervised Learning.", CreditHours = 3, Level = AcademicLevel.SecondYear, DepartmentId = aiDept.DepartmentId },
+                    new Course { Code = "AI301", Name = "Deep Learning & Neural Networks", Description = "CNN, RNN, Transformers.", CreditHours = 3, Level = AcademicLevel.ThirdYear, DepartmentId = aiDept.DepartmentId }
                 };
 
                 context.Courses.AddRange(courses);
                 context.SaveChanges();
 
-                // ربط المتطلبات السابقة (شجرة متسلسلة ونظيفة بدون Cycles)
+                // المتطلبات السابقة (Prerequisites)
                 var cs101 = context.Courses.First(c => c.Code == "CS101");
                 var cs102 = context.Courses.First(c => c.Code == "CS102");
                 var cs201 = context.Courses.First(c => c.Code == "CS201");
                 var cs301 = context.Courses.First(c => c.Code == "CS301");
-                var cs302 = context.Courses.First(c => c.Code == "CS302");
+                var it101 = context.Courses.First(c => c.Code == "IT101");
                 var it201 = context.Courses.First(c => c.Code == "IT201");
                 var it301 = context.Courses.First(c => c.Code == "IT301");
-                var cs401 = context.Courses.First(c => c.Code == "CS401");
+                var is101 = context.Courses.First(c => c.Code == "IS101");
+                var is201 = context.Courses.First(c => c.Code == "IS201");
+                var ai201 = context.Courses.First(c => c.Code == "AI201");
+                var ai301 = context.Courses.First(c => c.Code == "AI301");
 
                 var prereqs = new List<CoursePrerequisite>
                 {
-                    new() { CourseId = cs102.CourseId, PrerequisiteCourseId = cs101.CourseId }, // CS102 يشترط CS101
-                    new() { CourseId = cs201.CourseId, PrerequisiteCourseId = cs102.CourseId }, // CS201 يشترط CS102
-                    new() { CourseId = cs301.CourseId, PrerequisiteCourseId = cs201.CourseId }, // CS301 يشترط CS201
-                    new() { CourseId = cs302.CourseId, PrerequisiteCourseId = cs201.CourseId }, // CS302 يشترط CS201
-                    new() { CourseId = it301.CourseId, PrerequisiteCourseId = it201.CourseId }, // IT301 يشترط IT201
-                    new() { CourseId = cs401.CourseId, PrerequisiteCourseId = cs301.CourseId }  // CS401 يشترط CS301
+                    new CoursePrerequisite { CourseId = cs102.CourseId, PrerequisiteCourseId = cs101.CourseId }, // CS102 requires CS101
+                    new CoursePrerequisite { CourseId = cs201.CourseId, PrerequisiteCourseId = cs102.CourseId }, // CS201 requires CS102
+                    new CoursePrerequisite { CourseId = cs301.CourseId, PrerequisiteCourseId = cs201.CourseId }, // CS301 requires CS201
+                    new CoursePrerequisite { CourseId = it301.CourseId, PrerequisiteCourseId = it201.CourseId }, // IT301 requires IT201
+                    new CoursePrerequisite { CourseId = is201.CourseId, PrerequisiteCourseId = is101.CourseId }, // IS201 requires IS101
+                    new CoursePrerequisite { CourseId = ai201.CourseId, PrerequisiteCourseId = cs101.CourseId }, // AI201 requires CS101
+                    new CoursePrerequisite { CourseId = ai301.CourseId, PrerequisiteCourseId = ai201.CourseId }  // AI301 requires AI201
                 };
 
                 context.CoursePrerequisites.AddRange(prereqs);
                 context.SaveChanges();
             }
 
-            // 6. ==================== الطلاب (Students) ====================
+            var cCS101 = context.Courses.First(c => c.Code == "CS101");
+            var cCS102 = context.Courses.First(c => c.Code == "CS102");
+            var cCS201 = context.Courses.First(c => c.Code == "CS201");
+            var cIT101 = context.Courses.First(c => c.Code == "IT101");
+            var cIT201 = context.Courses.First(c => c.Code == "IT201");
+            var cIT301 = context.Courses.First(c => c.Code == "IT301");
+            var cIS101 = context.Courses.First(c => c.Code == "IS101");
+            var cIS201 = context.Courses.First(c => c.Code == "IS201");
+            var cAI201 = context.Courses.First(c => c.Code == "AI201");
+
+            // =========================================================================
+            // 6. الشعب الدراسية والمواعيد (Sections & Schedules)
+            // =========================================================================
+            if (!context.CourseSections.Any())
+            {
+                var sections = new List<CourseSection>
+                {
+                    // --- شعب فصل الخريف المنتهي Fall 2025/2026 ---
+                    new CourseSection
+                    {
+                        CourseId = cCS101.CourseId,
+                        InstructorId = drAhmed.InstructorId,
+                        SemesterId = fallSemester.SemesterId,
+                        ClassroomId = hallA.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 60,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Saturday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(11, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cCS101.CourseId,
+                        InstructorId = drKhaledCS.InstructorId,
+                        SemesterId = fallSemester.SemesterId,
+                        ClassroomId = room201.ClassroomId,
+                        SectionNumber = 2,
+                        Capacity = 45,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Monday, StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(12, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIT101.CourseId,
+                        InstructorId = drMonaIT.InstructorId,
+                        SemesterId = fallSemester.SemesterId,
+                        ClassroomId = hallB.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 50,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Sunday, StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(12, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIT201.CourseId,
+                        InstructorId = drMonaIT.InstructorId,
+                        SemesterId = fallSemester.SemesterId,
+                        ClassroomId = lab1.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 25,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Tuesday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(11, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIS101.CourseId,
+                        InstructorId = drSaraIS.InstructorId,
+                        SemesterId = fallSemester.SemesterId,
+                        ClassroomId = room202.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 35,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Wednesday, StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(13, 0, 0) }
+                        }
+                    },
+
+                    // --- شعب فصل الربيع الفعال حالياً Spring 2025/2026 ---
+                    new CourseSection
+                    {
+                        CourseId = cCS101.CourseId, // شعبة إعادة للراسبين في الخريف
+                        InstructorId = drKhaledCS.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = room202.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 30,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Saturday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(10, 30, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cCS102.CourseId, // هياكل البيانات
+                        InstructorId = drAhmed.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = hallA.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 60,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Sunday, StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(12, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cCS102.CourseId, // شعبة ثانية لهياكل البيانات
+                        InstructorId = engMostafa.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = room201.ClassroomId,
+                        SectionNumber = 2,
+                        Capacity = 35,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Monday, StartTime = new TimeSpan(12, 0, 0), EndTime = new TimeSpan(14, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cCS201.CourseId, // خوارزميات
+                        InstructorId = drAhmed.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = room201.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 45,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Monday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(11, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIT201.CourseId, // قواعد بيانات 1
+                        InstructorId = drMonaIT.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = lab1.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 25,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Sunday, StartTime = new TimeSpan(13, 0, 0), EndTime = new TimeSpan(15, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIT301.CourseId, // قواعد بيانات متقدمة
+                        InstructorId = engTarekIT.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = lab2.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 20,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Wednesday, StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(12, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cIS201.CourseId, // تحليل نظم
+                        InstructorId = drSaraIS.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = room201.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 35,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Thursday, StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(13, 0, 0) }
+                        }
+                    },
+                    new CourseSection
+                    {
+                        CourseId = cAI201.CourseId, // تعلم الآلة
+                        InstructorId = drYasserAI.InstructorId,
+                        SemesterId = springSemester.SemesterId,
+                        ClassroomId = hallB.ClassroomId,
+                        SectionNumber = 1,
+                        Capacity = 50,
+                        SectionSchedules = new List<SectionSchedule>
+                        {
+                            new SectionSchedule { DayOfWeek = StudyDayOfWeek.Wednesday, StartTime = new TimeSpan(13, 0, 0), EndTime = new TimeSpan(15, 0, 0) }
+                        }
+                    }
+                };
+
+                context.CourseSections.AddRange(sections);
+                context.SaveChanges();
+            }
+
+            // =========================================================================
+            // 7. الطلاب (Students) - سيناريوهات اختبار شاملة لـ AC-01 إلى AC-12
+            // =========================================================================
             if (!context.Students.Any())
             {
                 var students = new List<Student>
                 {
-                    // طلاب متفوقون
-                    new() { UniversityId = "ST0001", FullName = "Ahmed Mahmoud Hassan", Email = "ahmed.m@std.univ.edu", Phone = "01099887766", DateOfBirth = new DateTime(2003, 4, 15), Gender = Gender.Male, AcademicLevel = AcademicLevel.FourthYear, EnrollmentDate = new DateTime(2021, 9, 20), DepartmentId = cs.DepartmentId, Status = StudentStatus.Active },
-                    new() { UniversityId = "ST0002", FullName = "Mariam Adel Youssef", Email = "mariam.a@std.univ.edu", Phone = "01088776655", DateOfBirth = new DateTime(2004, 8, 22), Gender = Gender.Female, AcademicLevel = AcademicLevel.ThirdYear, EnrollmentDate = new DateTime(2022, 9, 20), DepartmentId = cs.DepartmentId, Status = StudentStatus.Active },
-                    
-                    // طلاب متوسطون
-                    new() { UniversityId = "ST0003", FullName = "Kareem Tarek Mostafa", Email = "kareem.t@std.univ.edu", Phone = "01077665544", DateOfBirth = new DateTime(2004, 11, 5), Gender = Gender.Male, AcademicLevel = AcademicLevel.ThirdYear, EnrollmentDate = new DateTime(2022, 9, 20), DepartmentId = it.DepartmentId, Status = StudentStatus.Active },
-                    new() { UniversityId = "ST0004", FullName = "Nadine Ibrahim Samy", Email = "nadine.i@std.univ.edu", Phone = "01066554433", DateOfBirth = new DateTime(2005, 3, 10), Gender = Gender.Female, AcademicLevel = AcademicLevel.SecondYear, EnrollmentDate = new DateTime(2023, 9, 20), DepartmentId = cs.DepartmentId, Status = StudentStatus.Active },
-                    
-                    // طالب تحت الإنذار الأكاديمي Probation (لاختبار شرط الـ 12 ساعة AC-10)
-                    new() { UniversityId = "ST0005", FullName = "Hossam Amr Galal", Email = "hossam.a@std.univ.edu", Phone = "01055443322", DateOfBirth = new DateTime(2004, 1, 18), Gender = Gender.Male, AcademicLevel = AcademicLevel.SecondYear, EnrollmentDate = new DateTime(2023, 9, 20), DepartmentId = cs.DepartmentId, Status = StudentStatus.Active },
+                    // ST0001: طالب متفوق CS (سنة ثانية) - اجتاز CS101 ومسجل في CS102
+                    new Student
+                    {
+                        UniversityId = "ST0001",
+                        FullName = "Ahmed Ali Mohamed",
+                        Email = "ahmed.ali@std.fcai.edu",
+                        Phone = "01010001001",
+                        DateOfBirth = new DateTime(2004, 5, 14),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
 
-                    // طالب موقوف عن الدراسة Suspended (لاختبار رفض التسجيل AC-07)
-                    new() { UniversityId = "ST0006", FullName = "Ziad Walid Nabil", Email = "ziad.w@std.univ.edu", Phone = "01044332211", DateOfBirth = new DateTime(2003, 6, 30), Gender = Gender.Male, AcademicLevel = AcademicLevel.ThirdYear, EnrollmentDate = new DateTime(2022, 9, 20), DepartmentId = it.DepartmentId, Status = StudentStatus.Suspended },
+                    // ST0002: طالبة CS (سنة ثانية) - رسبت في CS101 وتطلب إعادتها (Retake)
+                    new Student
+                    {
+                        UniversityId = "ST0002",
+                        FullName = "Sara Ibrahim Hassan",
+                        Email = "sara.ibrahim@std.fcai.edu",
+                        Phone = "01010001002",
+                        DateOfBirth = new DateTime(2004, 8, 20),
+                        Gender = Gender.Female,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
 
-                    // طالب جديد مستجد سنة أولى
-                    new() { UniversityId = "ST0007", FullName = "Yasmine Hany Soliman", Email = "yasmine.h@std.univ.edu", Phone = "01033221100", DateOfBirth = new DateTime(2006, 9, 12), Gender = Gender.Female, AcademicLevel = AcademicLevel.FirstYear, EnrollmentDate = new DateTime(2025, 9, 15), DepartmentId = cs.DepartmentId, Status = StudentStatus.Active },
-                    new() { UniversityId = "ST0008", FullName = "Mostafa Raafat Ezzat", Email = "mostafa.r@std.univ.edu", Phone = "01022110099", DateOfBirth = new DateTime(2006, 2, 8), Gender = Gender.Male, AcademicLevel = AcademicLevel.FirstYear, EnrollmentDate = new DateTime(2025, 9, 15), DepartmentId = it.DepartmentId, Status = StudentStatus.Active }
+                    // ST0003: طالب IT (سنة أولى) - موقوف قيده Suspended (يُمنع من التسجيل)
+                    new Student
+                    {
+                        UniversityId = "ST0003",
+                        FullName = "Mahmoud Saeed Mostafa",
+                        Email = "mahmoud.saeed@std.fcai.edu",
+                        Phone = "01010001003",
+                        DateOfBirth = new DateTime(2005, 2, 10),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.FirstYear,
+                        EnrollmentDate = new DateTime(2024, 9, 15),
+                        Status = StudentStatus.Suspended,
+                        DepartmentId = itDept.DepartmentId
+                    },
+
+                    // ST0004: طالب CS (سنة ثانية) - على إنذار أكاديمي Probation (معدل أقل من 2.00)
+                    new Student
+                    {
+                        UniversityId = "ST0004",
+                        FullName = "Youssef Adel Nader",
+                        Email = "youssef.adel@std.fcai.edu",
+                        Phone = "01010001004",
+                        DateOfBirth = new DateTime(2004, 11, 5),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
+
+                    // ST0005: طالبة CS (سنة رابعة) - أوائل الدفعة CGPA 3.96
+                    new Student
+                    {
+                        UniversityId = "ST0005",
+                        FullName = "Mariam Kamal Tawfik",
+                        Email = "mariam.kamal@std.fcai.edu",
+                        Phone = "01010001005",
+                        DateOfBirth = new DateTime(2002, 3, 12),
+                        Gender = Gender.Female,
+                        AcademicLevel = AcademicLevel.FourthYear,
+                        EnrollmentDate = new DateTime(2021, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
+
+                    // ST0006: طالب مستجد CS (سنة أولى) - قام بإسقاط مقرر (Dropped)
+                    new Student
+                    {
+                        UniversityId = "ST0006",
+                        FullName = "Omar Khaled Mansour",
+                        Email = "omar.khaled@std.fcai.edu",
+                        Phone = "01010001006",
+                        DateOfBirth = new DateTime(2005, 9, 18),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.FirstYear,
+                        EnrollmentDate = new DateTime(2024, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = csDept.DepartmentId
+                    },
+
+                    // ST0007: طالبة IT (سنة ثانية)
+                    new Student
+                    {
+                        UniversityId = "ST0007",
+                        FullName = "Nour Hassan Elsayed",
+                        Email = "nour.hassan@std.fcai.edu",
+                        Phone = "01010001007",
+                        DateOfBirth = new DateTime(2004, 1, 25),
+                        Gender = Gender.Female,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = itDept.DepartmentId
+                    },
+
+                    // ST0008: طالب IS (سنة ثانية)
+                    new Student
+                    {
+                        UniversityId = "ST0008",
+                        FullName = "Ziad Tarek Fathy",
+                        Email = "ziad.tarek@std.fcai.edu",
+                        Phone = "01010001008",
+                        DateOfBirth = new DateTime(2004, 6, 30),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = isDept.DepartmentId
+                    },
+
+                    // ST0009: طالب متخرج Graduated
+                    new Student
+                    {
+                        UniversityId = "ST0009",
+                        FullName = "Kareem Farouk Hamed",
+                        Email = "kareem.farouk@std.fcai.edu",
+                        Phone = "01010001009",
+                        DateOfBirth = new DateTime(2001, 4, 15),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.FourthYear,
+                        EnrollmentDate = new DateTime(2020, 9, 15),
+                        Status = StudentStatus.Graduated,
+                        DepartmentId = csDept.DepartmentId
+                    },
+
+                    // ST0010: طالبة منسحبة Withdrawn
+                    new Student
+                    {
+                        UniversityId = "ST0010",
+                        FullName = "Salma Hesham Abdelrahman",
+                        Email = "salma.hesham@std.fcai.edu",
+                        Phone = "01010001010",
+                        DateOfBirth = new DateTime(2005, 7, 11),
+                        Gender = Gender.Female,
+                        AcademicLevel = AcademicLevel.FirstYear,
+                        EnrollmentDate = new DateTime(2024, 9, 15),
+                        Status = StudentStatus.Withdrawn,
+                        DepartmentId = itDept.DepartmentId
+                    },
+
+                    // ST0011: طالب IT (سنة ثالثة)
+                    new Student
+                    {
+                        UniversityId = "ST0011",
+                        FullName = "Hossam Amr Galal",
+                        Email = "hossam.amr@std.fcai.edu",
+                        Phone = "01010001011",
+                        DateOfBirth = new DateTime(2003, 12, 1),
+                        Gender = Gender.Male,
+                        AcademicLevel = AcademicLevel.ThirdYear,
+                        EnrollmentDate = new DateTime(2022, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = itDept.DepartmentId
+                    },
+
+                    // ST0012: طالبة AI (سنة ثانية)
+                    new Student
+                    {
+                        UniversityId = "ST0012",
+                        FullName = "Aya Sherif Badawy",
+                        Email = "aya.sherif@std.fcai.edu",
+                        Phone = "01010001012",
+                        DateOfBirth = new DateTime(2004, 4, 18),
+                        Gender = Gender.Female,
+                        AcademicLevel = AcademicLevel.SecondYear,
+                        EnrollmentDate = new DateTime(2023, 9, 15),
+                        Status = StudentStatus.Active,
+                        DepartmentId = aiDept.DepartmentId
+                    }
                 };
 
                 context.Students.AddRange(students);
                 context.SaveChanges();
             }
 
-            // 7. ==================== فتح الشعب والجداول (Sections & Schedules) ====================
-            var activeSem = context.Semesters.First(s => s.Status == SemesterStatus.Active);
-            var completedSem1 = context.Semesters.First(s => s.AcademicYear == "2024/2025" && s.Name == SemesterName.Fall);
-            var completedSem2 = context.Semesters.First(s => s.AcademicYear == "2024/2025" && s.Name == SemesterName.Spring);
-
-            var room101 = context.Classrooms.First(c => c.RoomNumber == "Room 101");
-            var hallA = context.Classrooms.First(c => c.RoomNumber == "Hall A");
-            var lab1 = context.Classrooms.First(c => c.RoomNumber == "Lab 1");
-
-            var drAhmed = context.Instructors.First(i => i.FullName.Contains("Mohamed Ahmed"));
-            var drSara = context.Instructors.First(i => i.FullName.Contains("Sara Hassan"));
-            var drMona = context.Instructors.First(i => i.FullName.Contains("Mona El-Sayed"));
-
-            var cs101Crs = context.Courses.First(c => c.Code == "CS101");
-            var cs102Crs = context.Courses.First(c => c.Code == "CS102");
-            var it201Crs = context.Courses.First(c => c.Code == "IT201");
-            var cs201Crs = context.Courses.First(c => c.Code == "CS201");
-
-            if (!context.CourseSections.Any())
-            {
-                // شعب الفصل السابق خريف 2024
-                var secOld1 = new CourseSection { CourseId = cs101Crs.CourseId, InstructorId = drAhmed.InstructorId, SemesterId = completedSem1.SemesterId, ClassroomId = hallA.ClassroomId, SectionNumber = 1, Capacity = 100 };
-                var secOld2 = new CourseSection { CourseId = it201Crs.CourseId, InstructorId = drMona.InstructorId, SemesterId = completedSem1.SemesterId, ClassroomId = room101.ClassroomId, SectionNumber = 1, Capacity = 50 };
-
-                // شعب الفصل السابق ربيع 2024
-                var secOld3 = new CourseSection { CourseId = cs102Crs.CourseId, InstructorId = drSara.InstructorId, SemesterId = completedSem2.SemesterId, ClassroomId = hallA.ClassroomId, SectionNumber = 1, Capacity = 80 };
-
-                // شعب الفصل الحالي النشط خريف 2025
-                var secActive1 = new CourseSection { CourseId = cs101Crs.CourseId, InstructorId = drAhmed.InstructorId, SemesterId = activeSem.SemesterId, ClassroomId = hallA.ClassroomId, SectionNumber = 1, Capacity = 100 };
-                var secActive2 = new CourseSection { CourseId = cs102Crs.CourseId, InstructorId = drSara.InstructorId, SemesterId = activeSem.SemesterId, ClassroomId = room101.ClassroomId, SectionNumber = 1, Capacity = 50 };
-                var secActive3 = new CourseSection { CourseId = cs201Crs.CourseId, InstructorId = drAhmed.InstructorId, SemesterId = activeSem.SemesterId, ClassroomId = room101.ClassroomId, SectionNumber = 1, Capacity = 40 };
-
-                // شعبة بسعة محدودة جداً لاختبار اكتمال السعة (AC-11)
-                var secFullTest = new CourseSection { CourseId = it201Crs.CourseId, InstructorId = drMona.InstructorId, SemesterId = activeSem.SemesterId, ClassroomId = lab1.ClassroomId, SectionNumber = 1, Capacity = 2 };
-
-                context.CourseSections.AddRange(secOld1, secOld2, secOld3, secActive1, secActive2, secActive3, secFullTest);
-                context.SaveChanges();
-
-                // مواعيد الشعب الأسبوعية
-                var schedules = new List<SectionSchedule>
-                {
-                    new() { SectionId = secActive1.SectionId, DayOfWeek = StudyDayOfWeek.Sunday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(10, 30, 0) },
-                    new() { SectionId = secActive1.SectionId, DayOfWeek = StudyDayOfWeek.Tuesday, StartTime = new TimeSpan(9, 0, 0), EndTime = new TimeSpan(10, 30, 0) },
-
-                    new() { SectionId = secActive2.SectionId, DayOfWeek = StudyDayOfWeek.Sunday, StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(12, 30, 0) },
-                    new() { SectionId = secActive2.SectionId, DayOfWeek = StudyDayOfWeek.Tuesday, StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(12, 30, 0) },
-
-                    new() { SectionId = secActive3.SectionId, DayOfWeek = StudyDayOfWeek.Monday, StartTime = new TimeSpan(10, 0, 0), EndTime = new TimeSpan(11, 30, 0) },
-                    new() { SectionId = secFullTest.SectionId, DayOfWeek = StudyDayOfWeek.Wednesday, StartTime = new TimeSpan(12, 0, 0), EndTime = new TimeSpan(13, 30, 0) }
-                };
-
-                context.SectionSchedules.AddRange(schedules);
-                context.SaveChanges();
-            }
-
-            // 8. ==================== التسجيلات والدرجات السابقة (Historical Enrollments & Grades) ====================
+            // =========================================================================
+            // 8. التسجيلات والدرجات (Enrollments & Grades)
+            // =========================================================================
             if (!context.Enrollments.Any())
             {
-                var st1 = context.Students.First(s => s.UniversityId == "ST0001");
-                var st2 = context.Students.First(s => s.UniversityId == "ST0002");
-                var st5 = context.Students.First(s => s.UniversityId == "ST0005");
+                // جلب كائنات الطلاب
+                var stAhmed = context.Students.First(s => s.UniversityId == "ST0001");
+                var stSara = context.Students.First(s => s.UniversityId == "ST0002");
+                var stYoussef = context.Students.First(s => s.UniversityId == "ST0004");
+                var stMariam = context.Students.First(s => s.UniversityId == "ST0005");
+                var stOmar = context.Students.First(s => s.UniversityId == "ST0006");
+                var stNour = context.Students.First(s => s.UniversityId == "ST0007");
+                var stZiad = context.Students.First(s => s.UniversityId == "ST0008");
+                var stHossam = context.Students.First(s => s.UniversityId == "ST0011");
+                var stAya = context.Students.First(s => s.UniversityId == "ST0012");
 
-                var secOld1 = context.CourseSections.First(s => s.SemesterId == completedSem1.SemesterId && s.Course.Code == "CS101");
-                var secOld3 = context.CourseSections.First(s => s.SemesterId == completedSem2.SemesterId && s.Course.Code == "CS102");
-                var secFullTest = context.CourseSections.First(s => s.SemesterId == activeSem.SemesterId && s.Capacity == 2);
+                // شعب الخريف
+                var secFallCS101_1 = context.CourseSections.First(s => s.SemesterId == fallSemester.SemesterId && s.CourseId == cCS101.CourseId && s.SectionNumber == 1);
+                var secFallCS101_2 = context.CourseSections.First(s => s.SemesterId == fallSemester.SemesterId && s.CourseId == cCS101.CourseId && s.SectionNumber == 2);
+                var secFallIT101_1 = context.CourseSections.First(s => s.SemesterId == fallSemester.SemesterId && s.CourseId == cIT101.CourseId && s.SectionNumber == 1);
+                var secFallIT201_1 = context.CourseSections.First(s => s.SemesterId == fallSemester.SemesterId && s.CourseId == cIT201.CourseId && s.SectionNumber == 1);
+                var secFallIS101_1 = context.CourseSections.First(s => s.SemesterId == fallSemester.SemesterId && s.CourseId == cIS101.CourseId && s.SectionNumber == 1);
 
-                // الطالب ST0001 نجح بامتياز A في CS101 و CS102
-                var enr1 = new Enrollment { StudentId = st1.StudentId, SectionId = secOld1.SectionId, RegistrationDate = new DateTime(2024, 9, 20), Status = EnrollmentStatus.Completed };
-                var enr2 = new Enrollment { StudentId = st1.StudentId, SectionId = secOld3.SectionId, RegistrationDate = new DateTime(2025, 2, 15), Status = EnrollmentStatus.Completed };
+                // شعب الربيع
+                var secSpringCS101_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cCS101.CourseId && s.SectionNumber == 1);
+                var secSpringCS102_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cCS102.CourseId && s.SectionNumber == 1);
+                var secSpringCS201_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cCS201.CourseId && s.SectionNumber == 1);
+                var secSpringIT201_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cIT201.CourseId && s.SectionNumber == 1);
+                var secSpringIT301_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cIT301.CourseId && s.SectionNumber == 1);
+                var secSpringIS201_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cIS201.CourseId && s.SectionNumber == 1);
+                var secSpringAI201_1 = context.CourseSections.First(s => s.SemesterId == springSemester.SemesterId && s.CourseId == cAI201.CourseId && s.SectionNumber == 1);
 
-                // الطالبة ST0002 نجحت بتقدير B في CS101
-                var enr3 = new Enrollment { StudentId = st2.StudentId, SectionId = secOld1.SectionId, RegistrationDate = new DateTime(2024, 9, 20), Status = EnrollmentStatus.Completed };
-
-                // الطالب ST0005 رسب في CS101 بتقدير F (مجموع 45) لاختبار سياسة الإعادة والإنذار
-                var enr4 = new Enrollment { StudentId = st5.StudentId, SectionId = secOld1.SectionId, RegistrationDate = new DateTime(2024, 9, 20), Status = EnrollmentStatus.Completed };
-
-                // ملء السكشن التجريبي لطالبين لاختبار رفض الطالب الثالث لاكتمال السعة (AC-11)
-                var enrFull1 = new Enrollment { StudentId = st1.StudentId, SectionId = secFullTest.SectionId, RegistrationDate = DateTime.Now.AddDays(-5), Status = EnrollmentStatus.Registered };
-                var enrFull2 = new Enrollment { StudentId = st2.StudentId, SectionId = secFullTest.SectionId, RegistrationDate = DateTime.Now.AddDays(-4), Status = EnrollmentStatus.Registered };
-
-                context.Enrollments.AddRange(enr1, enr2, enr3, enr4, enrFull1, enrFull2);
-                context.SaveChanges();
-
-                // رصد درجات الفصول المكتملة
-                var grades = new List<Grade>
+                // --- 1. تسجيلات فصل الخريف المنتهي Fall (Completed مع رصد الدرجات) ---
+                var fallEnrollments = new List<Enrollment>
                 {
-                    new() { EnrollmentId = enr1.EnrollmentId, Midterm = 19.5m, Practical = 19.0m, Final = 56.5m }, // Total: 95.0 -> A (4.00)
-                    new() { EnrollmentId = enr2.EnrollmentId, Midterm = 18.0m, Practical = 18.5m, Final = 55.0m }, // Total: 91.5 -> A (4.00)
-                    new() { EnrollmentId = enr3.EnrollmentId, Midterm = 16.0m, Practical = 16.0m, Final = 50.0m }, // Total: 82.0 -> B (3.00)
-                    new() { EnrollmentId = enr4.EnrollmentId, Midterm = 8.0m, Practical = 7.0m, Final = 30.0m }   // Total: 45.0 -> F (0.00) -> Probation
+                    // أحمد علي: ممتاز في CS101 و IT101 و IS101
+                    new Enrollment
+                    {
+                        StudentId = stAhmed.StudentId,
+                        SectionId = secFallCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 18.00m, Practical = 18.00m, Final = 49.00m } // Total: 85 (B+, 3.50)
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stAhmed.StudentId,
+                        SectionId = secFallIT101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 19.00m, Practical = 19.00m, Final = 54.00m } // Total: 92 (A, 4.00)
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stAhmed.StudentId,
+                        SectionId = secFallIS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 3),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 17.00m, Practical = 16.00m, Final = 45.00m } // Total: 78 (C+, 2.50)
+                    },
+
+                    // سارة إبراهيم: رسبت في CS101 ونجحت في IT101
+                    new Enrollment
+                    {
+                        StudentId = stSara.StudentId,
+                        SectionId = secFallCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 10.00m, Practical = 10.00m, Final = 25.00m } // Total: 45 (F, 0.00 - راسب!)
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stSara.StudentId,
+                        SectionId = secFallIT101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 15.00m, Practical = 14.00m, Final = 41.00m } // Total: 70 (C, 2.00)
+                    },
+
+                    // يوسف عادل: رسب في CS101 ومقبول في IS101 -> إنذار أكاديمي Probation
+                    new Enrollment
+                    {
+                        StudentId = stYoussef.StudentId,
+                        SectionId = secFallCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 3),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 12.00m, Practical = 10.00m, Final = 36.00m } // Total: 58 (F, 0.00 - راسب!)
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stYoussef.StudentId,
+                        SectionId = secFallIS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 4),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 13.00m, Practical = 11.00m, Final = 38.00m } // Total: 62 (D, 1.00)
+                    },
+
+                    // مريم كمال: متفوقة جداً A في جميع المواد
+                    new Enrollment
+                    {
+                        StudentId = stMariam.StudentId,
+                        SectionId = secFallCS101_2.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 20.00m, Practical = 20.00m, Final = 58.00m } // Total: 98 (A, 4.00)
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stMariam.StudentId,
+                        SectionId = secFallIT201_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 19.50m, Practical = 19.50m, Final = 56.00m } // Total: 95 (A, 4.00)
+                    },
+
+                    // نور حسن
+                    new Enrollment
+                    {
+                        StudentId = stNour.StudentId,
+                        SectionId = secFallIT101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 3),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 18.00m, Practical = 17.00m, Final = 51.00m } // Total: 86 (B+, 3.50)
+                    },
+
+                    // زياد طارق
+                    new Enrollment
+                    {
+                        StudentId = stZiad.StudentId,
+                        SectionId = secFallIS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 3),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 16.00m, Practical = 15.00m, Final = 49.00m } // Total: 80 (B, 3.00)
+                    },
+
+                    // حسام عمرو
+                    new Enrollment
+                    {
+                        StudentId = stHossam.StudentId,
+                        SectionId = secFallIT201_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 4),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 17.00m, Practical = 17.00m, Final = 48.00m } // Total: 82 (B, 3.00)
+                    },
+
+                    // آية شريف
+                    new Enrollment
+                    {
+                        StudentId = stAya.StudentId,
+                        SectionId = secFallCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2025, 10, 2),
+                        Status = EnrollmentStatus.Completed,
+                        Grade = new Grade { Midterm = 19.00m, Practical = 19.00m, Final = 53.00m } // Total: 91 (A, 4.00)
+                    }
                 };
 
-                context.Grades.AddRange(grades);
+                context.Enrollments.AddRange(fallEnrollments);
+                context.SaveChanges();
+
+                // --- 2. تسجيلات فصل الربيع الحالي Spring 2025/2026 (Registered و Dropped) ---
+                var springEnrollments = new List<Enrollment>
+                {
+                    // أحمد علي سجل CS102 (لأنه اجتاز CS101) وسجل IT201
+                    new Enrollment
+                    {
+                        StudentId = stAhmed.StudentId,
+                        SectionId = secSpringCS102_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stAhmed.StudentId,
+                        SectionId = secSpringIT201_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // سارة إبراهيم تعيد دراسة CS101 في شعبة الربيع
+                    new Enrollment
+                    {
+                        StudentId = stSara.StudentId,
+                        SectionId = secSpringCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 17),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // يوسف عادل يعيد دراسة CS101
+                    new Enrollment
+                    {
+                        StudentId = stYoussef.StudentId,
+                        SectionId = secSpringCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 17),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // مريم كمال تسجل CS201 و IT301
+                    new Enrollment
+                    {
+                        StudentId = stMariam.StudentId,
+                        SectionId = secSpringCS201_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stMariam.StudentId,
+                        SectionId = secSpringIT301_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // عمر خالد قام بإسقاط المقرر Dropped لاختبار قاعدة R32
+                    new Enrollment
+                    {
+                        StudentId = stOmar.StudentId,
+                        SectionId = secSpringCS101_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 18),
+                        Status = EnrollmentStatus.Dropped
+                    },
+
+                    // نور حسن تسجل IT201
+                    new Enrollment
+                    {
+                        StudentId = stNour.StudentId,
+                        SectionId = secSpringIT201_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 17),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // زياد طارق يسجل IS201
+                    new Enrollment
+                    {
+                        StudentId = stZiad.StudentId,
+                        SectionId = secSpringIS201_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // حسام عمرو يسجل IT301
+                    new Enrollment
+                    {
+                        StudentId = stHossam.StudentId,
+                        SectionId = secSpringIT301_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 17),
+                        Status = EnrollmentStatus.Registered
+                    },
+
+                    // آية شريف تسجل CS102 و AI201
+                    new Enrollment
+                    {
+                        StudentId = stAya.StudentId,
+                        SectionId = secSpringCS102_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    },
+                    new Enrollment
+                    {
+                        StudentId = stAya.StudentId,
+                        SectionId = secSpringAI201_1.SectionId,
+                        RegistrationDate = new DateTime(2026, 2, 16),
+                        Status = EnrollmentStatus.Registered
+                    }
+                };
+
+                context.Enrollments.AddRange(springEnrollments);
                 context.SaveChanges();
             }
+        }
+
+        private static bool HasExistingData(UniversityDbContext context)
+        {
+            return
+                context.Colleges.Any() ||
+                context.Departments.Any() ||
+                context.Classrooms.Any() ||
+                context.Semesters.Any() ||
+                context.Instructors.Any() ||
+                context.Courses.Any() ||
+                context.CoursePrerequisites.Any() ||
+                context.CourseSections.Any() ||
+                context.SectionSchedules.Any() ||
+                context.Students.Any() ||
+                context.Enrollments.Any() ||
+                context.Set<Grade>().Any();
         }
     }
 }
