@@ -9,8 +9,8 @@ var options = new DbContextOptionsBuilder<UniversityDbContext>()
         "Server=.;Database=UniversityAcademicDb;Trusted_Connection=True;TrustServerCertificate=True;")
     .Options;
 
-using var context = new UniversityDbContext(options);
-//SeedData(context);
+await context.Database.MigrateAsync();
+SeedData(context);
 
 var collegeService = new CollegeService(context);
 var departmentService = new DepartmentService(context);
