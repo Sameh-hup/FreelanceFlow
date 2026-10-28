@@ -346,7 +346,7 @@ The system has been strictly engineered and verified against core domain scenari
 
 <div align="center">
 
-Made with dedication by the **Engineering Development Team**  
+Made with dedication by the **Eng Sameh Mostafa**  
 *Graduation Project / Mini Project — Academic Year 2026*
 
 </div>
