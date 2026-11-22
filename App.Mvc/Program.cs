@@ -1,5 +1,6 @@
 using App.BLL.Extensions;
 using App.DAL.Data;
+using App.Mvc.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,15 +11,18 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add Identity Services (like CityLibrary)
+builder.Services.AddIdentityServices();
+
+// Add BLL Services
 builder.Services.AddBllServices();
 
 var app = builder.Build();
 
-// Seed initial Admin user and ensure migrations on startup
+// Seed initial Roles and Admin user on startup
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DbInitializer.SeedAsync(context);
+    await DbInitializer.SeedAsync(scope.ServiceProvider);
 }
 
 // Configure the HTTP request pipeline.
@@ -31,6 +35,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

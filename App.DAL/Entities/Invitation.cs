@@ -9,7 +9,7 @@ public class Invitation
     public DateTime ExpiresAtUtc { get; set; }
     public DateTime? UsedAtUtc { get; set; }
     public DateTime? RevokedAtUtc { get; set; }
-    public int CreatedByUserId { get; set; }
+    public string CreatedByUserId { get; set; } = string.Empty;
 
     // Navigation properties
     public virtual Client Client { get; set; } = null!;

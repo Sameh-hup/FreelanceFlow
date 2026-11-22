@@ -2,7 +2,7 @@ namespace App.BLL.Interfaces.Services;
 
 public interface IAccessService
 {
-    Task<bool> CanFreelancerAccessClientAsync(int freelancerId, int clientId);
-    Task<bool> CanFreelancerAccessProjectAsync(int freelancerId, int projectId);
-    Task<bool> CanClientAccessProjectAsync(int clientUserId, int projectId);
+    Task<bool> CanFreelancerAccessClientAsync(string freelancerId, int clientId);
+    Task<bool> CanFreelancerAccessProjectAsync(string freelancerId, int projectId);
+    Task<bool> CanClientAccessProjectAsync(string clientUserId, int projectId);
 }

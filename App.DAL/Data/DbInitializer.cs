@@ -1,33 +1,53 @@
 using App.DAL.Entities;
 using App.DAL.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace App.DAL.Data;
 
 public static class DbInitializer
 {
-    public static async Task SeedAsync(AppDbContext context)
+    public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
-        // 1. Ensure migrations are applied
+        var context = serviceProvider.GetRequiredService<AppDbContext>();
         await context.Database.MigrateAsync();
 
-        // 2. Seed initial Admin (FR-04) if not exists
-        if (!await context.Users.AnyAsync(u => u.Role == UserRole.Admin))
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+
+        // 1. Seed Roles
+        string[] roles = ["Admin", "Freelancer", "Client"];
+        foreach (var role in roles)
         {
-            var adminUser = new User
+            if (!await roleManager.RoleExistsAsync(role))
             {
-                Name = "System Admin",
-                Email = "admin@freelanceflow.com",
-                // Initial temporary password hash (MustChangePassword = true per FR-04)
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123456"),
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+
+        // 2. Seed Admin user (FR-04)
+        var adminEmail = "admin@freelanceflow.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            adminUser = new User
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                FullName = "System Admin",
                 Role = UserRole.Admin,
                 IsActive = true,
                 MustChangePassword = true,
-                CreatedAtUtc = DateTime.UtcNow
+                CreatedAtUtc = DateTime.UtcNow,
+                EmailConfirmed = true
             };
 
-            await context.Users.AddAsync(adminUser);
-            await context.SaveChangesAsync();
+            var result = await userManager.CreateAsync(adminUser, "Admin@123456");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
         }
     }
 }
