@@ -2,7 +2,7 @@ namespace App.DAL.Entities;
 
 public class Client
 {
-    public int ClientID { get; set; }
+    public int ID { get; set; }
     public string UserID { get; set; } = string.Empty; // The Freelancer (User.Id) who owns this client
     public string CompanyName { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;

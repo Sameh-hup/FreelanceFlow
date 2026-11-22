@@ -24,11 +24,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.AuditLog", b =>
                 {
-                    b.Property<int>("AuditLogID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditLogID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Action")
                         .IsRequired()
@@ -55,7 +55,7 @@ namespace App.DAL.Migrations
                     b.Property<string>("UserID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("AuditLogID");
+                    b.HasKey("ID");
 
                     b.HasIndex("UserID");
 
@@ -64,11 +64,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.Client", b =>
                 {
-                    b.Property<int>("ClientID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClientID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -98,7 +98,7 @@ namespace App.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ClientID");
+                    b.HasKey("ID");
 
                     b.HasIndex("UserID");
 
@@ -107,11 +107,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.Invitation", b =>
                 {
-                    b.Property<int>("InvitationID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvitationID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<int>("ClientID")
                         .HasColumnType("int");
@@ -139,7 +139,7 @@ namespace App.DAL.Migrations
                     b.Property<DateTime?>("UsedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("InvitationID");
+                    b.HasKey("ID");
 
                     b.HasIndex("ClientID");
 
@@ -148,16 +148,16 @@ namespace App.DAL.Migrations
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
-                    b.ToTable("Invitations");
+                    b.ToTable("Invitation");
                 });
 
             modelBuilder.Entity("App.DAL.Entities.Invoice", b =>
                 {
-                    b.Property<int>("InvoiceID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
@@ -186,7 +186,7 @@ namespace App.DAL.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.HasKey("InvoiceID");
+                    b.HasKey("ID");
 
                     b.HasIndex("ProjectID");
 
@@ -195,11 +195,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.Milestone", b =>
                 {
-                    b.Property<int>("MilestoneID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MilestoneID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
@@ -215,7 +215,7 @@ namespace App.DAL.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
-                    b.HasKey("MilestoneID");
+                    b.HasKey("ID");
 
                     b.HasIndex("ProjectID");
 
@@ -224,11 +224,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.Payment", b =>
                 {
-                    b.Property<int>("PaymentID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
@@ -251,7 +251,7 @@ namespace App.DAL.Migrations
                     b.Property<DateOnly>("PaymentDate")
                         .HasColumnType("date");
 
-                    b.HasKey("PaymentID");
+                    b.HasKey("ID");
 
                     b.HasIndex("InvoiceID");
 
@@ -260,11 +260,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.Project", b =>
                 {
-                    b.Property<int>("ProjectID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<decimal>("Budget")
                         .HasPrecision(18, 2)
@@ -300,7 +300,7 @@ namespace App.DAL.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.HasKey("ProjectID");
+                    b.HasKey("ID");
 
                     b.HasIndex("ClientID");
 
@@ -309,11 +309,11 @@ namespace App.DAL.Migrations
 
             modelBuilder.Entity("App.DAL.Entities.TaskItem", b =>
                 {
-                    b.Property<int>("TaskID")
+                    b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
@@ -339,7 +339,7 @@ namespace App.DAL.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("TaskID");
+                    b.HasKey("ID");
 
                     b.HasIndex("MilestoneID");
 

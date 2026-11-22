@@ -4,7 +4,7 @@ namespace App.DAL.Entities;
 
 public class TaskItem
 {
-    public int TaskID { get; set; }
+    public int ID { get; set; }
     public int MilestoneID { get; set; }
     public string Title { get; set; } = string.Empty;
     public TaskPriority Priority { get; set; } = TaskPriority.Medium;

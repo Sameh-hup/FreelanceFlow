@@ -8,12 +8,12 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
 {
     public void Configure(EntityTypeBuilder<Client> builder)
     {
-        builder.HasKey(c => c.ClientID);
+        builder.HasKey(c => c.ID);
         builder.Property(c => c.CompanyName).IsRequired().HasMaxLength(150);
         builder.Property(c => c.Phone).IsRequired().HasMaxLength(50);
         builder.Property(c => c.Address).IsRequired().HasMaxLength(255);
 
-        // Soft delete query filter (BR-05)
+        // Soft delete query filter 
         builder.HasQueryFilter(c => !c.IsDeleted);
 
         // Freelancer owns clients

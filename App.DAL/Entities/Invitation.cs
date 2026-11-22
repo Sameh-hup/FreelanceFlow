@@ -2,7 +2,7 @@ namespace App.DAL.Entities;
 
 public class Invitation
 {
-    public int InvitationID { get; set; }
+    public int ID { get; set; }
     public int ClientID { get; set; }
     public string Email { get; set; } = string.Empty;
     public string TokenHash { get; set; } = string.Empty;

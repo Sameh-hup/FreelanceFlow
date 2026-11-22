@@ -4,7 +4,7 @@ namespace App.DAL.Entities;
 
 public class Payment
 {
-    public int PaymentID { get; set; }
+    public int ID { get; set; }
     public int InvoiceID { get; set; }
     public decimal Amount { get; set; }
     public Currency Currency { get; set; }

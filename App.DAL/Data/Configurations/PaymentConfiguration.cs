@@ -8,11 +8,11 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 {
     public void Configure(EntityTypeBuilder<Payment> builder)
     {
-        builder.HasKey(p => p.PaymentID);
+        builder.HasKey(p => p.ID);
         builder.Property(p => p.Amount).HasPrecision(18, 2);
         builder.Property(p => p.Currency).HasConversion<string>().HasMaxLength(10);
 
-        // Restrict delete on invoice with payments (BR-21)
+        // Restrict delete on invoice with payments 
         builder.HasOne(p => p.Invoice)
                .WithMany(i => i.Payments)
                .HasForeignKey(p => p.InvoiceID)

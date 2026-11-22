@@ -2,7 +2,7 @@ namespace App.DAL.Entities;
 
 public class Milestone
 {
-    public int MilestoneID { get; set; }
+    public int ID { get; set; }
     public int ProjectID { get; set; }
     public string Name { get; set; } = string.Empty;
     public DateOnly DueDate { get; set; }

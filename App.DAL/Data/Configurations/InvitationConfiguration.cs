@@ -8,7 +8,7 @@ public class InvitationConfiguration : IEntityTypeConfiguration<Invitation>
 {
     public void Configure(EntityTypeBuilder<Invitation> builder)
     {
-        builder.HasKey(inv => inv.InvitationID);
+        builder.HasKey(inv => inv.ID);
         builder.Property(inv => inv.Email).IsRequired().HasMaxLength(255);
         builder.Property(inv => inv.TokenHash).IsRequired().HasMaxLength(255);
         builder.HasIndex(inv => inv.TokenHash).IsUnique();

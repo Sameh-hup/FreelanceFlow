@@ -8,7 +8,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {
-        builder.HasKey(p => p.ProjectID);
+        builder.HasKey(p => p.ID);
         builder.Property(p => p.Name).IsRequired().HasMaxLength(150);
         builder.Property(p => p.Budget).HasPrecision(18, 2);
         builder.Property(p => p.Currency).HasConversion<string>().HasMaxLength(10);

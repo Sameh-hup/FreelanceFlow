@@ -8,7 +8,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 {
     public void Configure(EntityTypeBuilder<AuditLog> builder)
     {
-        builder.HasKey(a => a.AuditLogID);
+        builder.HasKey(a => a.ID);
         builder.Property(a => a.EntityName).IsRequired().HasMaxLength(100);
         builder.Property(a => a.Action).IsRequired().HasMaxLength(50);
 

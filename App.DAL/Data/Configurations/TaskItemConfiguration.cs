@@ -8,12 +8,12 @@ public class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
 {
     public void Configure(EntityTypeBuilder<TaskItem> builder)
     {
-        builder.HasKey(t => t.TaskID);
+        builder.HasKey(t => t.ID);
         builder.Property(t => t.Title).IsRequired().HasMaxLength(200);
         builder.Property(t => t.Priority).HasConversion<string>().HasMaxLength(20);
         builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
 
-        // Cascade delete: Milestone -> Tasks (Section 7)
+        // Cascade delete: Milestone -> Tasks 
         builder.HasOne(t => t.Milestone)
                .WithMany(m => m.Tasks)
                .HasForeignKey(t => t.MilestoneID)

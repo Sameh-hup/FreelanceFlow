@@ -8,11 +8,11 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
 {
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
-        builder.HasKey(i => i.InvoiceID);
+        builder.HasKey(i => i.ID);
         builder.Property(i => i.Amount).HasPrecision(18, 2);
         builder.Property(i => i.Currency).HasConversion<string>().HasMaxLength(10);
 
-        // Concurrency Token (RowVersion) (Section 7, BR-19)
+        // Concurrency Token (RowVersion) 
         builder.Property(i => i.RowVersion).IsRowVersion();
 
         builder.HasOne(i => i.Project)
