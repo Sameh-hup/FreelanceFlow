@@ -1,6 +1,7 @@
 using App.BLL.Interfaces;
 using App.BLL.Repositories;
 using App.BLL.Services.Clock;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace App.BLL.Extensions;
@@ -15,7 +16,8 @@ public static class BllServiceExtensions
         // 2. Generic Repository
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-        // Note: Specific repositories and services can be registered here as implemented
+        // 3. Register FluentValidation Validators
+        services.AddValidatorsFromAssembly(typeof(BllServiceExtensions).Assembly, includeInternalTypes: true);
 
         return services;
     }

@@ -1,0 +1,42 @@
+@using App.Mvc.Models
+@using System.Text.Json
+@{
+    string? toastJson = TempData["ToastMessage"] as string;
+    TosterViewModel? toast = null;
+    if (!string.IsNullOrWhiteSpace(toastJson))
+    {
+        try
+        {
+            toast = JsonSerializer.Deserialize<TosterViewModel>(toastJson);
+        }
+        catch
+        {
+            toast = new TosterViewModel { Type = TosterType.Info, Content = toastJson };
+        }
+    }
+}
+
+@if (toast is not null)
+{
+    var alertClass = toast.Type switch
+    {
+        TosterType.Success => "alert-success",
+        TosterType.Error => "alert-danger",
+        TosterType.Warning => "alert-warning",
+        _ => "alert-info"
+    };
+
+    var iconClass = toast.Type switch
+    {
+        TosterType.Success => "bi-check-circle-fill",
+        TosterType.Error => "bi-x-circle-fill",
+        TosterType.Warning => "bi-exclamation-triangle-fill",
+        _ => "bi-info-circle-fill"
+    };
+
+    <div class="alert @alertClass alert-dismissible fade show shadow-sm my-2" role="alert">
+        <i class="bi @iconClass me-2"></i>
+        <span>@toast.Content</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
