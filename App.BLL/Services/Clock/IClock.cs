@@ -4,4 +4,5 @@ public interface IClock
 {
     DateTime UtcNow { get; }
     DateOnly UtcToday { get; }
+    DateOnly CairoToday { get; }
 }

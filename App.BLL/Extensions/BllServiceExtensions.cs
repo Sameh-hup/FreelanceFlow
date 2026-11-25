@@ -1,5 +1,7 @@
 using App.BLL.Interfaces;
+using App.BLL.Interfaces.Services;
 using App.BLL.Repositories;
+using App.BLL.Services;
 using App.BLL.Services.Clock;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,13 +12,22 @@ public static class BllServiceExtensions
 {
     public static IServiceCollection AddBllServices(this IServiceCollection services)
     {
-        // 1. Clock Service (UTC)
+        return services.AddBLL();
+    }
+
+    public static IServiceCollection AddBLL(this IServiceCollection services)
+    {
         services.AddSingleton<IClock, SystemClock>();
 
-        // 2. Generic Repository
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
 
-        // 3. Register FluentValidation Validators
+        services.AddScoped<IAccessService, AccessService>();
+        services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<ITaskService, TaskService>();
+
         services.AddValidatorsFromAssembly(typeof(BllServiceExtensions).Assembly, includeInternalTypes: true);
 
         return services;
