@@ -10,30 +10,33 @@ namespace App.BLL.Extensions;
 
 public static class BllServiceExtensions
 {
-    public static IServiceCollection AddBllServices(this IServiceCollection services)
+    public static IServiceCollection AddBLL(this IServiceCollection services)
     {
-        // 1. Clock Service (UTC)
+        // 1. Clock Service (UTC & Cairo time)
         services.AddSingleton<IClock, SystemClock>();
 
-        // 2. Generic Repository
+        // 2. Generic & Specific Repositories
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        // 3. Concrete Domain Repositories
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
-        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
-        // 4. Domain & Application Services
+        // 3. Domain & Application Services
         services.AddScoped<IAccessService, AccessService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<ITaskService, TaskService>();
-        services.AddScoped<IInvoiceService, InvoiceService>();
-        services.AddScoped<IAuthService, AuthService>();
 
-        // 5. Register FluentValidation Validators
+        // 4. Register FluentValidation Validators
         services.AddValidatorsFromAssembly(typeof(BllServiceExtensions).Assembly, includeInternalTypes: true);
 
         return services;
+    }
+
+    public static IServiceCollection AddBllServices(this IServiceCollection services)
+    {
+        return services.AddBLL();
     }
 }

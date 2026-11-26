@@ -11,33 +11,35 @@ namespace App.BLL.Services;
 public class InvoiceService : IInvoiceService
 {
     private readonly IInvoiceRepository _invoiceRepository;
+    private readonly AppDbContext _context;
     private readonly IAccessService _accessService;
     private readonly IClock _clock;
-    private readonly AppDbContext _context;
 
     public InvoiceService(
         IInvoiceRepository invoiceRepository,
+        AppDbContext context,
         IAccessService accessService,
-        IClock clock,
-        AppDbContext context)
+        IClock clock)
     {
         _invoiceRepository = invoiceRepository;
+        _context = context;
         _accessService = accessService;
         _clock = clock;
-        _context = context;
     }
 
     public async Task<List<Invoice>> GetInvoicesAsync(string freelancerId, string? searchName = null)
     {
         var invoices = await _invoiceRepository.GetInvoicesByFreelancerIdAsync(freelancerId);
+
         if (!string.IsNullOrWhiteSpace(searchName))
         {
             var search = searchName.Trim();
-            invoices = invoices
-                .Where(i => i.Project.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                            i.Project.Client.CompanyName.Contains(search, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            invoices = invoices.Where(i =>
+                (i.Project?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (i.Project?.Client?.CompanyName?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false)
+            ).ToList();
         }
+
         return invoices;
     }
 
@@ -46,48 +48,69 @@ public class InvoiceService : IInvoiceService
         return await _invoiceRepository.GetInvoiceWithPaymentsAsync(invoiceId);
     }
 
+    public async Task<Invoice?> GetInvoiceDetailsAsync(int invoiceId, string freelancerId)
+    {
+        var invoice = await _invoiceRepository.GetInvoiceWithPaymentsAsync(invoiceId);
+        if (invoice == null)
+            return null;
+
+        if (!string.IsNullOrEmpty(freelancerId))
+        {
+            var hasAccess = await _accessService.CanFreelancerAccessInvoiceAsync(freelancerId, invoiceId);
+            if (!hasAccess)
+                throw new UnauthorizedAccessException("You do not have access to this invoice.");
+        }
+
+        return invoice;
+    }
+
     public async Task<bool> CreateInvoiceAsync(Invoice invoice, string freelancerId)
     {
         var hasAccess = await _accessService.CanFreelancerAccessProjectAsync(freelancerId, invoice.ProjectID);
         if (!hasAccess)
-            throw new UnauthorizedAccessException("You do not have permission to create an invoice for this project.");
+            throw new UnauthorizedAccessException("You do not have access to create an invoice for this project.");
+
+        if (invoice.Amount <= 0)
+            throw new ArgumentException("Invoice amount must be greater than zero.");
+
+        if (invoice.DueDate < invoice.IssueDate)
+            throw new ArgumentException("Due date must be on or after issue date.");
 
         var project = await _context.Projects.FindAsync(invoice.ProjectID);
         if (project == null)
             throw new InvalidOperationException("Project not found.");
 
-        // BR-08: Lock currency to project currency
         invoice.Currency = project.Currency;
-
-        // BR-15: DueDate >= IssueDate
-        if (invoice.DueDate < invoice.IssueDate)
-            throw new ArgumentOutOfRangeException(nameof(invoice.DueDate), "Invoice Due Date must be on or after the Issue Date .");
-
         invoice.CreatedAtUtc = _clock.UtcNow;
 
         await _invoiceRepository.AddAsync(invoice);
-        return await _invoiceRepository.SaveChangesAsync() > 0;
+        await _invoiceRepository.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> DeleteInvoiceAsync(int invoiceId, string freelancerId)
     {
         var invoice = await _invoiceRepository.GetInvoiceWithPaymentsAsync(invoiceId);
-        if (invoice == null || invoice.Project.Client.UserID != freelancerId || invoice.Project.Client.IsDeleted)
+        if (invoice == null)
             return false;
 
-        // BR-21: Forbid deletion if any payments exist
-        if (invoice.Payments != null && invoice.Payments.Any())
+        if (!string.IsNullOrEmpty(freelancerId))
         {
-            throw new InvalidOperationException("Cannot delete an invoice that has recorded payments .");
+            var hasAccess = await _accessService.CanFreelancerAccessInvoiceAsync(freelancerId, invoiceId);
+            if (!hasAccess)
+                throw new UnauthorizedAccessException("You do not have access to delete this invoice.");
         }
 
+        if (invoice.Payments != null && invoice.Payments.Any())
+            throw new InvalidOperationException("Invoices with existing payments cannot be deleted.");
+
         _invoiceRepository.Delete(invoice);
-        return await _invoiceRepository.SaveChangesAsync() > 0;
+        await _invoiceRepository.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> RecordPaymentAsync(int invoiceId, decimal amount, DateOnly paymentDate, string? notes, string freelancerId)
     {
-        // BR-19: Atomic Transaction
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -97,24 +120,27 @@ public class InvoiceService : IInvoiceService
                     .ThenInclude(p => p.Client)
                 .FirstOrDefaultAsync(i => i.ID == invoiceId);
 
-            if (invoice == null || invoice.Project.Client.UserID != freelancerId || invoice.Project.Client.IsDeleted)
-                throw new UnauthorizedAccessException("Invoice not found or access denied.");
+            if (invoice == null)
+                throw new KeyNotFoundException("Invoice not found.");
 
-            // BR-18: Validate balance
-            var remainingBalance = CalculateRemainingBalance(invoice);
-            if (amount <= 0 || amount > remainingBalance)
+            if (!string.IsNullOrEmpty(freelancerId) &&
+                (invoice.Project?.Client?.UserID != freelancerId || (invoice.Project?.Client?.IsDeleted ?? false)))
             {
-                throw new InvalidOperationException($"Payment amount ({amount:C}) cannot exceed remaining balance ({remainingBalance:C}).");
+                throw new UnauthorizedAccessException("You do not have permission to record payments on this invoice.");
             }
 
-            // BR-20: No future payments
-            var today = _clock.UtcToday;
-            if (paymentDate > today)
+            decimal balance = CalculateRemainingBalance(invoice);
+
+            if (amount <= 0 || amount > balance)
             {
-                throw new ArgumentOutOfRangeException(nameof(paymentDate), "Payment date cannot be in the future .");
+                throw new ArgumentException("Payment amount cannot exceed remaining balance and must be greater than zero.");
             }
 
-            // Create Payment
+            if (paymentDate > _clock.CairoToday)
+            {
+                throw new ArgumentException("Payment date cannot be in the future.");
+            }
+
             var payment = new Payment
             {
                 InvoiceID = invoiceId,
@@ -126,15 +152,14 @@ public class InvoiceService : IInvoiceService
             };
             await _context.Payments.AddAsync(payment);
 
-            // BR-19 / BR-29: Audit Log inside same transaction
             var auditLog = new AuditLog
             {
                 EntityName = "Payment",
-                EntityID = invoiceId,
                 Action = "Create",
                 UserID = freelancerId,
+                EntityID = invoiceId,
                 CreatedAtUtc = _clock.UtcNow,
-                NewValues = $"Amount: {amount}, PaymentDate: {paymentDate}, Currency: {invoice.Currency}"
+                NewValues = $"Amount: {amount}, Currency: {invoice.Currency}, PaymentDate: {paymentDate}"
             };
             await _context.AuditLogs.AddAsync(auditLog);
 
@@ -145,8 +170,7 @@ public class InvoiceService : IInvoiceService
         catch (DbUpdateConcurrencyException)
         {
             await transaction.RollbackAsync();
-            // NFR-11: Clear concurrency conflict message
-            throw new DbUpdateConcurrencyException("The invoice was updated concurrently by another operation, please try again.");
+            throw new InvalidOperationException("The invoice was updated concurrently, please try again.");
         }
         catch
         {
@@ -157,29 +181,21 @@ public class InvoiceService : IInvoiceService
 
     public decimal CalculateRemainingBalance(Invoice invoice)
     {
-        // BR-17
-        var totalPayments = invoice.Payments?.Sum(p => p.Amount) ?? 0m;
-        return Math.Max(0m, invoice.Amount - totalPayments);
+        decimal totalPayments = invoice.Payments?.Sum(p => p.Amount) ?? 0m;
+        decimal remaining = invoice.Amount - totalPayments;
+        return remaining < 0m ? 0m : remaining;
     }
 
     public InvoiceStatus CalculateInvoiceStatus(Invoice invoice)
     {
-        // BR-16: Strict sequential priority evaluation
         if (CalculateRemainingBalance(invoice) == 0m)
-        {
             return InvoiceStatus.Paid;
-        }
 
-        var today = _clock.UtcToday;
-        if (invoice.DueDate < today)
-        {
+        if (invoice.DueDate < _clock.CairoToday)
             return InvoiceStatus.Overdue;
-        }
 
         if (invoice.Payments != null && invoice.Payments.Any(p => p.Amount > 0))
-        {
             return InvoiceStatus.PartiallyPaid;
-        }
 
         return InvoiceStatus.Unpaid;
     }

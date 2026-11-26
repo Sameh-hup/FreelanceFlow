@@ -7,6 +7,7 @@ using App.DAL.Entities;
 using App.DAL.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace App.BLL.Services;
 
@@ -15,42 +16,43 @@ public class AuthService : IAuthService
     private readonly UserManager<User> _userManager;
     private readonly AppDbContext _context;
     private readonly IClock _clock;
+    private readonly IConfiguration? _configuration;
 
     public AuthService(
         UserManager<User> userManager,
         AppDbContext context,
-        IClock clock)
+        IClock clock,
+        IConfiguration? configuration = null)
     {
         _userManager = userManager;
         _context = context;
         _clock = clock;
+        _configuration = configuration;
     }
 
     public async Task<User?> AuthenticateAsync(string email, string password)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(normalizedEmail);
         if (user == null || !user.IsActive)
             return null;
 
-        var isValidPassword = await _userManager.CheckPasswordAsync(user, password);
-        if (!isValidPassword)
-            return null;
-
-        return user;
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
+        return isPasswordValid ? user : null;
     }
 
     public async Task<bool> RegisterFreelancerAsync(string name, string email, string password)
     {
-        // FR-01: Public registration only allows Freelancer role
-        var existingUser = await _userManager.FindByEmailAsync(email);
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var existingUser = await _userManager.FindByEmailAsync(normalizedEmail);
         if (existingUser != null)
             return false;
 
         var user = new User
         {
-            UserName = email,
-            Email = email,
-            FullName = name,
+            FullName = name.Trim(),
+            Email = normalizedEmail,
+            UserName = normalizedEmail,
             Role = UserRole.Freelancer,
             IsActive = true,
             MustChangePassword = false,
@@ -89,52 +91,58 @@ public class AuthService : IAuthService
 
     public async Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, string freelancerId)
     {
-        // Verify client exists and belongs to freelancer
         var client = await _context.Clients
             .FirstOrDefaultAsync(c => c.ID == clientId && c.UserID == freelancerId && !c.IsDeleted);
 
         if (client == null)
             throw new UnauthorizedAccessException("Client not found or you do not have permission to invite this client.");
 
-        // BR-25: Cryptographically secure random token (32 bytes = 64 hex characters)
-        var tokenBytes = RandomNumberGenerator.GetBytes(32);
-        var plainToken = Convert.ToHexString(tokenBytes);
+        byte[] randomBytes = RandomNumberGenerator.GetBytes(32);
+        string rawToken = Convert.ToHexString(randomBytes).ToLowerInvariant();
+        string tokenHash = ComputeSha256Hash(rawToken);
 
-        // SHA-256 hash for database storage
-        var tokenHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(plainToken));
-        var tokenHash = Convert.ToHexString(tokenHashBytes);
+        var previousInvitations = await _context.Invitation
+            .Where(i => i.ClientID == clientId && i.UsedAtUtc == null && i.RevokedAtUtc == null)
+            .ToListAsync();
+
+        foreach (var inv in previousInvitations)
+        {
+            inv.RevokedAtUtc = _clock.UtcNow;
+        }
 
         var invitation = new Invitation
         {
             ClientID = clientId,
-            Email = clientEmail,
+            Email = clientEmail.Trim().ToLowerInvariant(),
             TokenHash = tokenHash,
-            ExpiresAtUtc = _clock.UtcNow.AddDays(7), // BR-25: 7 days expiration
-            UsedAtUtc = null,
-            RevokedAtUtc = null,
+            ExpiresAtUtc = _clock.UtcNow.AddDays(7),
             CreatedByUserId = freelancerId
         };
 
         await _context.Invitation.AddAsync(invitation);
         await _context.SaveChangesAsync();
 
-        return plainToken;
+        string baseUrl = _configuration?["App:BaseUrl"]?.TrimEnd('/') ?? "";
+        return string.IsNullOrEmpty(baseUrl)
+            ? $"/Account/ClientInvite?token={rawToken}"
+            : $"{baseUrl}/Account/ClientInvite?token={rawToken}";
     }
 
     public async Task<bool> RegisterClientByInvitationTokenAsync(string token, string name, string password)
     {
-        // Hash incoming plain token
-        var incomingHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
-        var incomingHash = Convert.ToHexString(incomingHashBytes);
+        if (string.IsNullOrWhiteSpace(token))
+            return false;
+
+        string tokenHash = ComputeSha256Hash(token.Trim());
 
         var invitation = await _context.Invitation
             .Include(i => i.Client)
-            .FirstOrDefaultAsync(i => i.TokenHash == incomingHash &&
+            .FirstOrDefaultAsync(i => i.TokenHash == tokenHash &&
                                       i.UsedAtUtc == null &&
                                       i.RevokedAtUtc == null &&
                                       i.ExpiresAtUtc > _clock.UtcNow);
 
-        if (invitation == null || invitation.Client.IsDeleted)
+        if (invitation == null || (invitation.Client != null && invitation.Client.IsDeleted))
             return false;
 
         var existingUser = await _userManager.FindByEmailAsync(invitation.Email);
@@ -145,7 +153,7 @@ public class AuthService : IAuthService
         {
             UserName = invitation.Email,
             Email = invitation.Email,
-            FullName = name,
+            FullName = name.Trim(),
             Role = UserRole.Client,
             ClientId = invitation.ClientID,
             IsActive = true,
@@ -159,22 +167,25 @@ public class AuthService : IAuthService
 
         await _userManager.AddToRoleAsync(user, "Client");
 
-        // Mark invitation as used
         invitation.UsedAtUtc = _clock.UtcNow;
-        _context.Invitation.Update(invitation);
-
-        // Link portal user on client record
-        invitation.Client.PortalUser = user;
-        _context.Clients.Update(invitation.Client);
+        if (invitation.Client != null)
+        {
+            invitation.Client.PortalUser = user;
+        }
 
         await _context.SaveChangesAsync();
         return true;
     }
 
-    // Overloads for int IDs
     public Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
         => ChangePasswordAsync(userId.ToString(), oldPassword, newPassword);
 
     public Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, int freelancerId)
         => GenerateClientInvitationLinkAsync(clientId, clientEmail, freelancerId.ToString());
+
+    private static string ComputeSha256Hash(string rawData)
+    {
+        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawData));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
 }

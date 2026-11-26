@@ -7,15 +7,16 @@ public interface IInvoiceService
 {
     Task<List<Invoice>> GetInvoicesAsync(string freelancerId, string? searchName = null);
     Task<Invoice?> GetInvoiceDetailsAsync(int invoiceId);
+    Task<Invoice?> GetInvoiceDetailsAsync(int invoiceId, string freelancerId);
     Task<bool> CreateInvoiceAsync(Invoice invoice, string freelancerId);
     Task<bool> DeleteInvoiceAsync(int invoiceId, string freelancerId);
     Task<bool> RecordPaymentAsync(int invoiceId, decimal amount, DateOnly paymentDate, string? notes, string freelancerId);
     decimal CalculateRemainingBalance(Invoice invoice);
     InvoiceStatus CalculateInvoiceStatus(Invoice invoice);
 
-    // Overloads for int freelancerId
-    Task<List<Invoice>> GetInvoicesAsync(int freelancerId, string? searchName = null);
-    Task<bool> CreateInvoiceAsync(Invoice invoice, int freelancerId);
-    Task<bool> DeleteInvoiceAsync(int invoiceId, int freelancerId);
-    Task<bool> RecordPaymentAsync(int invoiceId, decimal amount, DateOnly paymentDate, string? notes, int freelancerId);
+    // Overloads for int freelancerId / legacy compatibility
+    Task<List<Invoice>> GetInvoicesAsync(int freelancerId, string? searchName = null) => GetInvoicesAsync(freelancerId.ToString(), searchName);
+    Task<bool> CreateInvoiceAsync(Invoice invoice, int freelancerId) => CreateInvoiceAsync(invoice, freelancerId.ToString());
+    Task<bool> DeleteInvoiceAsync(int invoiceId, int freelancerId) => DeleteInvoiceAsync(invoiceId, freelancerId.ToString());
+    Task<bool> RecordPaymentAsync(int invoiceId, decimal amount, DateOnly paymentDate, string? notes, int freelancerId) => RecordPaymentAsync(invoiceId, amount, paymentDate, notes, freelancerId.ToString());
 }

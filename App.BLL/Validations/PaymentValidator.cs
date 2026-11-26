@@ -8,9 +8,15 @@ public class PaymentValidator : AbstractValidator<Payment>
     public PaymentValidator()
     {
         RuleFor(p => p.Amount)
-            .GreaterThan(0).WithMessage("Payment Amount must be greater than zero.");
+            .GreaterThan(0)
+            .WithMessage("Payment amount must be greater than zero.");
+
+        RuleFor(p => p.PaymentDate)
+            .NotEmpty()
+            .WithMessage("Payment date is required.");
 
         RuleFor(p => p.Currency)
-            .IsInEnum().WithMessage("Invalid payment currency.");
+            .IsInEnum()
+            .WithMessage("Invalid payment currency.");
     }
 }

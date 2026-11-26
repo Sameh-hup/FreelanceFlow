@@ -26,6 +26,14 @@ public class AccessService : IAccessService
             .AnyAsync(p => p.ID == projectId && p.Client.UserID == freelancerId && !p.Client.IsDeleted);
     }
 
+    public async Task<bool> CanFreelancerAccessInvoiceAsync(string freelancerId, int invoiceId)
+    {
+        return await _context.Invoices
+            .Include(i => i.Project)
+                .ThenInclude(p => p.Client)
+            .AnyAsync(i => i.ID == invoiceId && i.Project.Client.UserID == freelancerId && !i.Project.Client.IsDeleted);
+    }
+
     public async Task<bool> CanClientAccessProjectAsync(string clientUserId, int projectId)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == clientUserId);

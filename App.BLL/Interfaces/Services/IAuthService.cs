@@ -10,7 +10,7 @@ public interface IAuthService
     Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, string freelancerId);
     Task<bool> RegisterClientByInvitationTokenAsync(string token, string name, string password);
 
-    // Overloads for int IDs
-    Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
-    Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, int freelancerId);
+    // Overloads for int IDs / legacy compatibility
+    Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword) => ChangePasswordAsync(userId.ToString(), oldPassword, newPassword);
+    Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, int freelancerId) => GenerateClientInvitationLinkAsync(clientId, clientEmail, freelancerId.ToString());
 }

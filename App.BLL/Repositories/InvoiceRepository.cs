@@ -13,7 +13,7 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
 
     public async Task<List<Invoice>> GetInvoicesByFreelancerIdAsync(string freelancerId)
     {
-        return await _dbSet
+        return await _context.Invoices
             .AsNoTracking()
             .Include(i => i.Project)
                 .ThenInclude(p => p.Client)
@@ -24,7 +24,7 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
 
     public async Task<Invoice?> GetInvoiceWithPaymentsAsync(int invoiceId)
     {
-        return await _dbSet
+        return await _context.Invoices
             .Include(i => i.Project)
                 .ThenInclude(p => p.Client)
             .Include(i => i.Payments)
@@ -33,7 +33,7 @@ public class InvoiceRepository : Repository<Invoice>, IInvoiceRepository
 
     public async Task<List<Invoice>> GetInvoicesByClientIdAsync(int clientId)
     {
-        return await _dbSet
+        return await _context.Invoices
             .AsNoTracking()
             .Include(i => i.Project)
             .Include(i => i.Payments)
