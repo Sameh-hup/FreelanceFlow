@@ -1,0 +1,470 @@
+@using Microsoft.AspNetCore.Identity
+@using App.DAL.Entities
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@{
+    ViewData["Title"] = "FreelanceFlow - The Premier Freelancer SaaS Platform";
+    ViewData["HideSidebar"] = true;
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+}
+
+<!-- Landing Navbar -->
+<nav class="landing-nav py-3">
+    <div class="container d-flex align-items-center justify-content-between">
+        <!-- Brand -->
+        <a asp-controller="Home" asp-action="Index" class="d-flex align-items-center gap-2 text-decoration-none">
+            <div class="sidebar-brand-logo" style="width: 36px; height: 36px;">
+                <i class="bi bi-stack fs-5"></i>
+            </div>
+            <div>
+                <span class="fs-5 fw-bold text-dark letter-spacing-tight">FreelanceFlow</span>
+            </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <div class="d-none d-md-flex align-items-center gap-4">
+            <a href="#features" class="text-sm fw-medium text-secondary-ff text-decoration-none">Features</a>
+            <a href="#how-it-works" class="text-sm fw-medium text-secondary-ff text-decoration-none">How It Works</a>
+            <a href="#demo" class="text-sm fw-medium text-secondary-ff text-decoration-none">Demo Accounts</a>
+            <a href="#portal" class="text-sm fw-medium text-secondary-ff text-decoration-none">Client Portal</a>
+        </div>
+
+        <!-- Right Action Buttons -->
+        <div class="d-flex align-items-center gap-2">
+            <!-- Theme Toggle -->
+            <button type="button" class="btn btn-sm btn-ghost-ff p-2 rounded-circle theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+                <i class="bi bi-moon-stars-fill fs-5 theme-toggle-icon"></i>
+            </button>
+
+            @if (user != null)
+            {
+                <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-primary-ff px-3">
+                    <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-secondary-ff px-3">
+                    Sign In
+                </a>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-sm btn-primary-ff px-3 d-none d-sm-inline-flex">
+                    Get Started Free <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            }
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="landing-hero text-center">
+    <div class="container">
+        <!-- Pill Badge -->
+        <div class="landing-badge mx-auto">
+            <i class="bi bi-stars"></i> The All-in-One Freelancer & Client Management SaaS
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="landing-headline mx-auto" style="max-width: 860px;">
+            Manage Projects, Delight Clients & <span class="text-primary" style="color: var(--color-primary) !important;">Get Paid On Time.</span>
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="landing-subheadline">
+            Stop juggling spreadsheets, forgotten deadlines, and lost WhatsApp messages. 
+            <strong>FreelanceFlow</strong> gives you a high-performance command center for client CRM, 
+            milestone tracking with intelligent health alerts, multi-currency invoicing, and client collaboration portals.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-3 mb-5">
+            @if (user != null)
+            {
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary-ff px-4 py-2 fs-6">
+                    <i class="bi bi-speedometer2 me-2"></i> Open Your Dashboard
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary-ff px-4 py-2 fs-6 shadow-sm">
+                    <i class="bi bi-rocket-takeoff me-2"></i> Start Free — No Credit Card
+                </a>
+                <a href="#demo" class="btn btn-secondary-ff px-4 py-2 fs-6">
+                    <i class="bi bi-play-circle me-2"></i> View Demo Accounts
+                </a>
+            }
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-4 text-xs text-secondary-ff mb-5">
+            <span class="d-flex align-items-center gap-1"><i class="bi bi-check2-circle text-success fs-6"></i> Zero Setup Required</span>
+            <span class="d-flex align-items-center gap-1"><i class="bi bi-check2-circle text-success fs-6"></i> Smart Project Health Alerts</span>
+            <span class="d-flex align-items-center gap-1"><i class="bi bi-check2-circle text-success fs-6"></i> Multi-Currency (USD, EUR, EGP)</span>
+            <span class="d-flex align-items-center gap-1"><i class="bi bi-check2-circle text-success fs-6"></i> Dedicated Client Portals</span>
+        </div>
+
+        <!-- Interactive Browser Mockup Card -->
+        <div class="preview-browser-frame mx-auto text-start" style="max-width: 980px;">
+            <div class="preview-browser-header">
+                <span class="browser-dot browser-dot-red"></span>
+                <span class="browser-dot browser-dot-yellow"></span>
+                <span class="browser-dot browser-dot-green"></span>
+                <span class="text-xs text-muted-ff ms-2 font-monospace">https://app.freelanceflow.com/dashboard</span>
+            </div>
+            <div class="p-4" style="background-color: var(--color-bg-main);">
+                <!-- Mini Stats Showcase -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 shadow-none">
+                            <div>
+                                <span class="text-xs text-secondary-ff fw-semibold text-uppercase">Total Clients</span>
+                                <div class="fs-4 fw-bold text-dark mt-1">3</div>
+                            </div>
+                            <div class="stat-icon-wrapper p-2" style="background-color: var(--color-primary-light); color: var(--color-primary); width: 36px; height: 36px;">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 shadow-none">
+                            <div>
+                                <span class="text-xs text-secondary-ff fw-semibold text-uppercase">Active Projects</span>
+                                <div class="fs-4 fw-bold text-dark mt-1">3</div>
+                            </div>
+                            <div class="stat-icon-wrapper p-2" style="background-color: var(--color-success-bg); color: var(--color-success); width: 36px; height: 36px;">
+                                <i class="bi bi-kanban"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 shadow-none">
+                            <div>
+                                <span class="text-xs text-danger fw-semibold text-uppercase">Overdue Tasks</span>
+                                <div class="fs-4 fw-bold text-danger mt-1">2</div>
+                            </div>
+                            <div class="stat-icon-wrapper p-2" style="background-color: var(--color-danger-bg); color: var(--color-danger); width: 36px; height: 36px;">
+                                <i class="bi bi-exclamation-octagon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 shadow-none">
+                            <div>
+                                <span class="text-xs text-warning fw-semibold text-uppercase">Unpaid Invoices</span>
+                                <div class="fs-4 fw-bold text-warning mt-1">2</div>
+                            </div>
+                            <div class="stat-icon-wrapper p-2" style="background-color: var(--color-warning-bg); color: var(--color-warning); width: 36px; height: 36px;">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mock Projects Sample -->
+                <div class="ff-card p-3 shadow-none">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-xs fw-semibold text-uppercase text-secondary-ff">Live Workspace Projects</span>
+                        <span class="badge-ff badge-indigo badge-sm">Real-time Pulse</span>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                            <div>
+                                <span class="fw-semibold text-dark text-sm">Fintech Dashboard Analytics</span>
+                                <span class="text-xs text-muted-ff ms-2 d-none d-sm-inline">Nordic Softworks AB</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-xs text-muted-ff">0%</span>
+                                <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle me-1"></i> Healthy</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                            <div>
+                                <span class="fw-semibold text-dark text-sm">Brand Identity & Flutter App</span>
+                                <span class="text-xs text-muted-ff ms-2 d-none d-sm-inline">Nile Media Studio</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-xs text-muted-ff">25%</span>
+                                <span class="badge-ff badge-warning badge-sm"><i class="bi bi-exclamation-circle me-1"></i> Attention</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded-2" style="background-color: var(--color-surface); border: 1px solid var(--color-border);">
+                            <div>
+                                <span class="fw-semibold text-dark text-sm">E-Commerce Cloud Migration</span>
+                                <span class="text-xs text-muted-ff ms-2 d-none d-sm-inline">Acme Global Technologies</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-xs text-muted-ff">40%</span>
+                                <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle me-1"></i> Healthy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5" style="border-top: 1px solid var(--color-border); background-color: var(--color-surface);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="text-xs fw-semibold text-uppercase text-primary letter-spacing-tight">Everything You Need</span>
+            <h2 class="fs-2 fw-bold text-dark mt-1">Built Specifically for Freelancers & Agencies</h2>
+            <p class="text-secondary-ff text-sm mx-auto" style="max-width: 600px;">
+                Designed to eliminate administrative overhead so you can focus on shipping remarkable work.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Centralized Client CRM</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Keep every client profile, contact email, phone, custom notes, and billing history neatly organized in one secure place.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-success-bg); color: var(--color-success);">
+                        <i class="bi bi-kanban"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Milestones & Task Breakdown</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Decompose projects into deliverables and granular tasks with priorities and deadlines. Progress tracks automatically.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-danger-bg); color: var(--color-danger);">
+                        <i class="bi bi-heart-pulse"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Smart Project Health</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Algorithmic status flags (<span class="text-success fw-medium">Healthy</span>, <span class="text-warning fw-medium">Attention</span>, <span class="text-danger fw-medium">Critical</span>) alert you immediately if overdue tasks or deadlines put delivery at risk.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-warning-bg); color: var(--color-warning);">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Multi-Currency Invoicing</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Create invoices locked to your project currency (USD, EUR, EGP). Track full and partial payments with concurrency-safe atomic transactions.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-info-bg); color: var(--color-info);">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Dedicated Client Portal</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Invite clients via secure cryptographic tokens. Clients log in to inspect progress and review invoices in a read-only environment.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="feature-box">
+                    <div class="feature-icon-wrapper" style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                        <i class="bi bi-moon-stars"></i>
+                    </div>
+                    <h3 class="fs-5 fw-semibold text-dark mb-2">Dark & Light Themes</h3>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Built for day and night. Seamlessly toggle between dark slate and clean light palettes with persistent local storage.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-5" style="background-color: var(--color-bg-main);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="text-xs fw-semibold text-uppercase text-primary letter-spacing-tight">Simple Workflow</span>
+            <h2 class="fs-2 fw-bold text-dark mt-1">From First Lead to Paid Invoice in 3 Steps</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-2">Add Clients & Projects</h4>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Register your client's details, define your project budget, currency, and deadline. Send them a private portal invite anytime.
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-2">Ship Milestones & Tasks</h4>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Organize work by phases. Mark tasks as In Progress or Completed, while FreelanceFlow calculates health and completion percentages automatically.
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-2">Invoice & Record Payments</h4>
+                    <p class="text-secondary-ff text-sm mb-0">
+                        Generate professional invoices, track payment status (Unpaid, Partial, Paid, Overdue), and record installment payments securely.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Demo Accounts Showcase -->
+<section id="demo" class="py-5" style="border-top: 1px solid var(--color-border); background-color: var(--color-surface);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="text-xs fw-semibold text-uppercase text-primary letter-spacing-tight">Instant Testing</span>
+            <h2 class="fs-2 fw-bold text-dark mt-1">Try Pre-Loaded Demo Accounts</h2>
+            <p class="text-secondary-ff text-sm mx-auto" style="max-width: 600px;">
+                Experience the application right now using pre-seeded accounts for each workspace role.
+            </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Freelancer Demo -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="demo-account-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge-ff badge-indigo">Freelancer Workspace</span>
+                        <i class="bi bi-briefcase text-primary fs-5"></i>
+                    </div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-1">Sameh Mostafa</h4>
+                    <p class="text-xs text-secondary-ff mb-3">Full control over clients, projects, milestones, and billing.</p>
+                    
+                    <div class="p-2 rounded-2 mb-3 text-xs" style="background-color: var(--color-bg-subtle);">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted-ff">Email:</span>
+                            <code class="fw-semibold text-primary">freelancer@flow.com</code>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted-ff">Password:</span>
+                            <code class="fw-semibold text-dark">Flow@123</code>
+                        </div>
+                    </div>
+
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-primary-ff w-100">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In as Freelancer
+                    </a>
+                </div>
+            </div>
+
+            <!-- Client Demo -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="demo-account-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge-ff badge-success">Client Portal</span>
+                        <i class="bi bi-person-badge text-success fs-5"></i>
+                    </div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-1">Acme Global Client</h4>
+                    <p class="text-xs text-secondary-ff mb-3">Read-only portal for project tracking and invoice viewing.</p>
+                    
+                    <div class="p-2 rounded-2 mb-3 text-xs" style="background-color: var(--color-bg-subtle);">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted-ff">Email:</span>
+                            <code class="fw-semibold text-success">client@flow.com</code>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted-ff">Password:</span>
+                            <code class="fw-semibold text-dark">Flow@123</code>
+                        </div>
+                    </div>
+
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-secondary-ff w-100">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In as Client
+                    </a>
+                </div>
+            </div>
+
+            <!-- Admin Demo -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="demo-account-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge-ff badge-warning">Admin Panel</span>
+                        <i class="bi bi-shield-lock text-warning fs-5"></i>
+                    </div>
+                    <h4 class="fs-5 fw-semibold text-dark mb-1">System Administrator</h4>
+                    <p class="text-xs text-secondary-ff mb-3">Manage all users, view system KPIs, and activate/deactivate accounts.</p>
+                    
+                    <div class="p-2 rounded-2 mb-3 text-xs" style="background-color: var(--color-bg-subtle);">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted-ff">Email:</span>
+                            <code class="fw-semibold text-warning">admin@flow.com</code>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted-ff">Password:</span>
+                            <code class="fw-semibold text-dark">Admin@123</code>
+                        </div>
+                    </div>
+
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-secondary-ff w-100">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In as Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5" style="background-color: var(--color-bg-main);">
+    <div class="container py-4 text-center">
+        <div class="ff-card p-5 mx-auto text-center" style="max-width: 800px; background: linear-gradient(135deg, var(--color-surface), var(--color-bg-subtle));">
+            <h2 class="fs-3 fw-bold text-dark mb-3">Ready to Elevate Your Freelance Business?</h2>
+            <p class="text-secondary-ff text-sm mx-auto mb-4" style="max-width: 520px;">
+                Join FreelanceFlow today. Bring clarity to your projects, establish transparency with clients, and get paid with complete peace of mind.
+            </p>
+            <div class="d-flex align-items-center justify-content-center gap-3">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary-ff px-4 py-2 fs-6">
+                    Create Your Account Now <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Landing Footer -->
+<footer class="py-4 border-top" style="background-color: var(--color-surface); border-color: var(--color-border) !important;">
+    <div class="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 text-xs text-secondary-ff">
+        <div class="d-flex align-items-center gap-2">
+            <div class="sidebar-brand-logo" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                <i class="bi bi-stack"></i>
+            </div>
+            <span class="fw-bold text-dark">FreelanceFlow</span>
+            <span>&copy; @DateTime.UtcNow.Year — Professional Freelancer & Client SaaS.</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <a href="#features" class="text-secondary-ff text-decoration-none">Features</a>
+            <a href="#demo" class="text-secondary-ff text-decoration-none">Demo Accounts</a>
+            <a asp-controller="Account" asp-action="Login" class="text-secondary-ff text-decoration-none">Sign In</a>
+            <a asp-controller="Account" asp-action="Register" class="text-primary text-decoration-none fw-semibold">Register</a>
+        </div>
+    </div>
+</footer>

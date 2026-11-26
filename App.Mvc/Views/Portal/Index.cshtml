@@ -1,0 +1,100 @@
+@using App.DAL.Entities
+@{
+    ViewData["Title"] = "Client Portal Overview";
+    var projects = ViewBag.Projects as List<Project> ?? new();
+    var invoices = ViewBag.Invoices as List<Invoice> ?? new();
+}
+
+<div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="page-title fs-4 fw-bold text-dark mb-1">Client Portal</h1>
+        <p class="page-subtitle text-secondary-ff text-sm mb-0">Overview of your ongoing projects and billing history</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6">
+        <div class="stat-card" onclick="window.location='@Url.Action("Projects", "Portal")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Engaged Projects</span>
+                <div class="stat-value fs-2 fw-bold text-dark mt-1">@projects.Count</div>
+                <div class="stat-subtitle text-xs text-muted-ff mt-1">Active deliverables</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                <i class="bi bi-kanban"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6">
+        <div class="stat-card" onclick="window.location='@Url.Action("Invoices", "Portal")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Issued Invoices</span>
+                <div class="stat-value fs-2 fw-bold text-dark mt-1">@invoices.Count</div>
+                <div class="stat-subtitle text-xs text-muted-ff mt-1">Billing and payment records</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-success-bg); color: var(--color-success);">
+                <i class="bi bi-receipt"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-6">
+        <div class="ff-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="fs-6 fw-semibold text-dark mb-0">Your Projects</h2>
+                <a asp-action="Projects" class="text-xs fw-medium text-primary">View all</a>
+            </div>
+            @if (projects.Count == 0)
+            {
+                <div class="text-center py-4 text-muted-ff text-xs">No active projects assigned yet.</div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var p in projects.Take(5))
+                    {
+                        <div class="p-3 border rounded-2 d-flex align-items-center justify-content-between bg-light">
+                            <div>
+                                <a asp-action="ProjectDetails" asp-route-id="@p.ID" class="fw-semibold text-dark text-sm">@p.Name</a>
+                                <div class="text-xs text-muted-ff">Due @p.Deadline.ToString("MMM dd, yyyy")</div>
+                            </div>
+                            <span class="badge-ff badge-indigo badge-sm">@p.Status</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="ff-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="fs-6 fw-semibold text-dark mb-0">Your Invoices</h2>
+                <a asp-action="Invoices" class="text-xs fw-medium text-primary">View all</a>
+            </div>
+            @if (invoices.Count == 0)
+            {
+                <div class="text-center py-4 text-muted-ff text-xs">No invoices issued yet.</div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var inv in invoices.Take(5))
+                    {
+                        <div class="p-3 border rounded-2 d-flex align-items-center justify-content-between bg-light">
+                            <div>
+                                <a asp-action="InvoiceDetails" asp-route-id="@inv.ID" class="fw-semibold text-dark text-sm">INV-@inv.ID.ToString("D4")</a>
+                                <div class="text-xs text-muted-ff">@inv.Currency @inv.Amount.ToString("N2") • Due @inv.DueDate.ToString("MMM dd")</div>
+                            </div>
+                            <a asp-action="InvoiceDetails" asp-route-id="@inv.ID" class="btn btn-sm btn-ghost-ff p-1">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

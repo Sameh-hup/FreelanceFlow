@@ -22,10 +22,14 @@ public static class IdentityServiceExtension
 
         services.ConfigureApplicationCookie(options =>
         {
-            options.ExpireTimeSpan = TimeSpan.FromHours(2);
+            options.ExpireTimeSpan = TimeSpan.FromHours(8);
             options.Cookie.Name = "FreelanceFlowCookie";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             options.SlidingExpiration = true;
             options.LoginPath = "/Account/Login";
+            options.LogoutPath = "/Account/Logout";
             options.AccessDeniedPath = "/Account/AccessDenied";
         });
 

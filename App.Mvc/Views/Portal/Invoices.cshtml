@@ -1,0 +1,85 @@
+@model List<App.Mvc.ViewModels.InvoiceViewModel>
+@{
+    ViewData["Title"] = "My Invoices";
+}
+
+<div class="mb-4">
+    <h1 class="page-title fs-4 fw-bold text-dark mb-1">My Invoices</h1>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Review billing statements, remaining balances, and payments</p>
+</div>
+
+<div class="ff-card overflow-hidden">
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state text-center py-5">
+            <div class="empty-state-icon mx-auto mb-2 text-muted-ff fs-1"><i class="bi bi-receipt"></i></div>
+            <div class="empty-state-title fs-5 fw-semibold text-dark">No invoices issued</div>
+            <p class="empty-state-description text-sm text-muted-ff mb-3">You do not have any invoices at this moment.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-sm">
+                <thead class="table-light text-xs text-uppercase text-secondary-ff">
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Project</th>
+                        <th>Total Amount</th>
+                        <th>Remaining</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="InvoiceDetails" asp-route-id="@inv.ID" class="fw-semibold text-dark">INV-@inv.ID.ToString("D4")</a>
+                            </td>
+                            <td>
+                                <span class="fw-medium text-dark">@inv.ProjectName</span>
+                            </td>
+                            <td>
+                                <span class="fw-medium text-dark">@inv.Currency @inv.Amount.ToString("N2")</span>
+                            </td>
+                            <td>
+                                <span class="@(inv.RemainingBalance > 0 ? "text-danger fw-semibold" : "text-success fw-medium")">
+                                    @inv.Currency @inv.RemainingBalance.ToString("N2")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-secondary-ff text-xs">@inv.DueDate.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td>
+                                @if (inv.Status == InvoiceStatus.Paid)
+                                {
+                                    <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+                                }
+                                else if (inv.Status == InvoiceStatus.Overdue)
+                                {
+                                    <span class="badge-ff badge-danger badge-sm"><i class="bi bi-exclamation-octagon-fill me-1"></i> Overdue</span>
+                                }
+                                else if (inv.Status == InvoiceStatus.PartiallyPaid)
+                                {
+                                    <span class="badge-ff badge-info badge-sm"><i class="bi bi-pie-chart-fill me-1"></i> Partial</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-ff badge-neutral badge-sm">Unpaid</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="InvoiceDetails" asp-route-id="@inv.ID" class="btn btn-sm btn-ghost-ff p-1">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,179 @@
+@model App.Mvc.ViewModels.InvoiceViewModel
+@{
+    ViewData["Title"] = $"Invoice INV-{Model.ID:D4}";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-xs text-secondary-ff text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Invoices
+    </a>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mt-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="page-title fs-4 fw-bold text-dark mb-0">INV-@Model.ID.ToString("D4")</h1>
+                @if (Model.Status == InvoiceStatus.Paid)
+                {
+                    <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+                }
+                else if (Model.Status == InvoiceStatus.Overdue)
+                {
+                    <span class="badge-ff badge-danger badge-sm"><i class="bi bi-exclamation-octagon-fill me-1"></i> Overdue</span>
+                }
+                else if (Model.Status == InvoiceStatus.PartiallyPaid)
+                {
+                    <span class="badge-ff badge-info badge-sm"><i class="bi bi-pie-chart-fill me-1"></i> Partially Paid</span>
+                }
+                else
+                {
+                    <span class="badge-ff badge-neutral badge-sm">Unpaid</span>
+                }
+            </div>
+            <p class="page-subtitle text-secondary-ff text-sm mb-0">
+                Project: <strong class="text-dark">@Model.ProjectName</strong> • Client: <span class="text-dark">@Model.ClientName</span>
+            </p>
+        </div>
+        <div>
+            @if (Model.RemainingBalance > 0)
+            {
+                <button type="button" class="btn btn-sm btn-primary-ff" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                    <i class="bi bi-credit-card me-1"></i> Record Payment
+                </button>
+            }
+            else
+            {
+                <span class="badge-ff badge-success badge-lg py-2 px-3">
+                    <i class="bi bi-check2-all me-1"></i> Fully Settled
+                </span>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Financial Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Total Invoiced</span>
+            <span class="fs-5 fw-bold text-dark mt-1 d-block">@Model.Currency @Model.Amount.ToString("N2")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Total Paid</span>
+            <span class="fs-5 fw-bold text-success mt-1 d-block">@Model.Currency @Model.TotalPaid.ToString("N2")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Remaining Balance</span>
+            <span class="fs-5 fw-bold @(Model.RemainingBalance > 0 ? "text-danger" : "text-dark") mt-1 d-block">
+                @Model.Currency @Model.RemainingBalance.ToString("N2")
+            </span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Due Date</span>
+            <span class="fs-6 fw-bold text-dark mt-1 d-block">@Model.DueDate.ToString("MMM dd, yyyy")</span>
+        </div>
+    </div>
+</div>
+
+<!-- Payments History Table -->
+<div class="ff-card p-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="fs-6 fw-semibold text-dark mb-0">Payment History (@Model.Payments.Count)</h2>
+        @if (Model.RemainingBalance > 0)
+        {
+            <button type="button" class="btn btn-sm btn-ghost-ff text-xs text-primary" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">
+                <i class="bi bi-plus-lg me-1"></i> Add Payment
+            </button>
+        }
+    </div>
+
+    @if (Model.Payments.Count == 0)
+    {
+        <div class="empty-state text-center py-4">
+            <div class="empty-state-icon mx-auto mb-2 text-muted-ff fs-2"><i class="bi bi-wallet2"></i></div>
+            <div class="empty-state-title fs-6 fw-semibold text-dark">No payments recorded yet</div>
+            <p class="empty-state-description text-xs text-muted-ff mb-3">When you receive funds from the client, record it here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-sm">
+                <thead class="table-light text-xs text-uppercase text-secondary-ff">
+                    <tr>
+                        <th>Payment Date</th>
+                        <th>Amount</th>
+                        <th>Notes / Method</th>
+                        <th>Recorded UTC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Payments)
+                    {
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-dark">@p.PaymentDate.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">+@p.Currency @p.Amount.ToString("N2")</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary-ff">@(string.IsNullOrEmpty(p.Notes) ? "—" : p.Notes)</span>
+                            </td>
+                            <td>
+                                <span class="text-muted-ff text-xs">@p.CreatedAtUtc.ToString("g")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Record Payment Modal -->
+@if (Model.RemainingBalance > 0)
+{
+    <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form asp-action="RecordPayment" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="InvoiceID" value="@Model.ID" />
+                    <input type="hidden" name="Currency" value="@Model.Currency" />
+                    <div class="modal-header">
+                        <h5 class="modal-title fs-6 fw-semibold">Record Payment for INV-@Model.ID.ToString("D4")</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2 px-3 text-xs mb-3">
+                            Max allowed payment is remaining balance: <strong>@Model.Currency @Model.RemainingBalance.ToString("N2")</strong>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-sm fw-medium text-dark">Payment Amount (@Model.Currency)</label>
+                            <input type="number" name="Amount" step="0.01" min="0.01" max="@Model.RemainingBalance" value="@Model.RemainingBalance" class="form-control" required autofocus />
+                            <div class="form-text text-xs text-muted-ff">Cannot exceed remaining balance (BR-18)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-sm fw-medium text-dark">Payment Date</label>
+                            <input type="date" name="PaymentDate" max="@DateTime.UtcNow.ToString("yyyy-MM-dd")" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" class="form-control" required />
+                            <div class="form-text text-xs text-muted-ff">No future dates allowed (BR-20)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-sm fw-medium text-dark">Payment Notes</label>
+                            <input type="text" name="Notes" class="form-control" placeholder="e.g. Bank Wire / Stripe Reference" />
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-sm btn-secondary-ff" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary-ff"><i class="bi bi-check2-circle me-1"></i> Submit Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Identity
+@using App.DAL.Entities
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@{
+    var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Dashboard";
+}
+
+<header class="app-topbar">
+    <div class="d-flex align-items-center gap-3">
+        <!-- Mobile Toggle -->
+        <button type="button" class="btn btn-sm btn-ghost-ff d-lg-none p-1" onclick="toggleSidebar(true)" aria-label="Toggle navigation menu">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <!-- Page Title -->
+        <span class="fw-semibold text-dark text-base">@pageTitle</span>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <!-- Theme Toggle Button -->
+        <button type="button" class="btn btn-sm btn-ghost-ff p-2 rounded-circle theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+            <i class="bi bi-moon-stars-fill fs-5 theme-toggle-icon"></i>
+        </button>
+
+        @if (user != null)
+        {
+            <div class="d-flex align-items-center gap-2 px-2 py-1 bg-light rounded-pill">
+                <div class="avatar-ff avatar-sm avatar-indigo">
+                    @user.FullName.Substring(0, Math.Min(2, user.FullName.Length)).ToUpper()
+                </div>
+                <span class="text-xs fw-medium text-dark d-none d-sm-inline">@user.FullName</span>
+            </div>
+        }
+    </div>
+</header>

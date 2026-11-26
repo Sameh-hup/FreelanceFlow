@@ -1,8 +1,241 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model App.Mvc.ViewModels.DashboardViewModel
+@inject App.BLL.Interfaces.Services.IProjectService ProjectService
+@inject App.BLL.Interfaces.Services.IInvoiceService InvoiceService
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Page Header -->
+<div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="page-title fs-4 fw-bold text-dark mb-1">Dashboard</h1>
+        <p class="page-subtitle text-secondary-ff text-sm mb-0">Business overview and active workspace pulse</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="Projects" asp-action="Create" class="btn btn-sm btn-secondary-ff">
+            <i class="bi bi-plus-lg me-1"></i> New Project
+        </a>
+        <a asp-controller="Invoices" asp-action="Create" class="btn btn-sm btn-primary-ff">
+            <i class="bi bi-receipt me-1"></i> Create Invoice
+        </a>
+    </div>
+</div>
+
+<!-- 4 Main Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card" onclick="window.location='@Url.Action("Index", "Clients")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Total Clients</span>
+                <div class="stat-value fs-2 fw-bold text-dark mt-1">@Model.TotalClients</div>
+                <div class="stat-subtitle text-xs text-muted-ff mt-1">Active client relationships</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-primary-light); color: var(--color-primary);">
+                <i class="bi bi-people"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card" onclick="window.location='@Url.Action("Index", "Projects")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Active Projects</span>
+                <div class="stat-value fs-2 fw-bold text-dark mt-1">@Model.ActiveProjects</div>
+                <div class="stat-subtitle text-xs text-muted-ff mt-1">In progress & not started</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-success-bg); color: var(--color-success);">
+                <i class="bi bi-kanban"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card" onclick="window.location='@Url.Action("Index", "Projects")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Overdue Tasks</span>
+                <div class="stat-value fs-2 fw-bold text-danger mt-1">@Model.OverdueTasks</div>
+                <div class="stat-subtitle text-xs text-danger mt-1">Require immediate action</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-danger-bg); color: var(--color-danger);">
+                <i class="bi bi-exclamation-octagon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card" onclick="window.location='@Url.Action("Index", "Invoices")'" style="cursor: pointer;">
+            <div>
+                <span class="stat-title text-xs fw-semibold text-uppercase text-secondary-ff">Unpaid Invoices</span>
+                <div class="stat-value fs-2 fw-bold text-warning mt-1">@Model.UnpaidInvoices</div>
+                <div class="stat-subtitle text-xs text-muted-ff mt-1">Awaiting client payment</div>
+            </div>
+            <div class="stat-icon-wrapper" style="background-color: var(--color-warning-bg); color: var(--color-warning);">
+                <i class="bi bi-receipt"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row g-4">
+    <!-- Left: Projects -->
+    <div class="col-12 col-lg-7">
+        <div class="ff-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="fs-6 fw-semibold text-dark mb-0">Active Projects</h2>
+                <a asp-controller="Projects" asp-action="Index" class="text-xs fw-medium text-primary">View all</a>
+            </div>
+
+            @if (Model.RecentProjects.Count == 0)
+            {
+                <div class="empty-state text-center py-4">
+                    <div class="empty-state-icon mx-auto mb-2 text-muted-ff fs-2"><i class="bi bi-folder2-open"></i></div>
+                    <div class="empty-state-title fs-6 fw-semibold text-dark">No projects yet</div>
+                    <p class="empty-state-description text-xs text-muted-ff mb-3">Create your first project to begin tracking milestones.</p>
+                    <a asp-controller="Projects" asp-action="Create" class="btn btn-sm btn-primary-ff">Create Project</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-sm">
+                        <thead class="table-light text-xs text-uppercase text-secondary-ff">
+                            <tr>
+                                <th>Project</th>
+                                <th>Client</th>
+                                <th>Progress</th>
+                                <th>Health</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var proj in Model.RecentProjects)
+                            {
+                                var progress = ProjectService.CalculateProgress(proj);
+                                var health = ProjectService.CalculateHealth(proj);
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@proj.ID" class="fw-semibold text-dark">@proj.Name</a>
+                                        <div class="text-xs text-muted-ff">Due @proj.Deadline.ToString("MMM dd, yyyy")</div>
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary-ff">@proj.Client?.CompanyName</span>
+                                    </td>
+                                    <td style="min-width: 120px;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: @(progress)%" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <span class="text-xs text-muted-ff">@(progress)%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (health == ProjectHealth.Critical)
+                                        {
+                                            <span class="badge-ff badge-danger badge-sm"><i class="bi bi-exclamation-triangle-fill me-1"></i> Critical</span>
+                                        }
+                                        else if (health == ProjectHealth.AttentionRequired)
+                                        {
+                                            <span class="badge-ff badge-warning badge-sm"><i class="bi bi-exclamation-circle me-1"></i> Attention</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle me-1"></i> Healthy</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@proj.ID" class="btn btn-sm btn-ghost-ff p-1" title="View details">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right: Overdue Tasks & Recent Invoices -->
+    <div class="col-12 col-lg-5">
+        <!-- Overdue Tasks Card -->
+        <div class="ff-card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <h2 class="fs-6 fw-semibold text-dark mb-0">Overdue Tasks</h2>
+                    @if (Model.OverdueTasks > 0)
+                    {
+                        <span class="badge-ff badge-danger badge-sm">@Model.OverdueTasks</span>
+                    }
+                </div>
+            </div>
+
+            @if (Model.OverdueTaskList.Count == 0)
+            {
+                <div class="text-center py-3 text-muted-ff text-xs">
+                    <i class="bi bi-check2-circle text-success fs-4 d-block mb-1"></i>
+                    All tasks are on track! No overdue tasks.
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var task in Model.OverdueTaskList)
+                    {
+                        <div class="p-2 border border-danger-subtle bg-danger-subtle rounded-2 d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="fw-medium text-dark text-xs">@task.Title</div>
+                                <div class="text-xs text-danger">Due: @task.DueDate.ToString("MMM dd") - Overdue</div>
+                            </div>
+                            <span class="badge-ff badge-danger badge-sm">@task.Priority</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Recent Invoices Card -->
+        <div class="ff-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="fs-6 fw-semibold text-dark mb-0">Recent Invoices</h2>
+                <a asp-controller="Invoices" asp-action="Index" class="text-xs fw-medium text-primary">View all</a>
+            </div>
+
+            @if (Model.RecentInvoices.Count == 0)
+            {
+                <div class="text-center py-3 text-muted-ff text-xs">
+                    No invoices issued yet.
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var inv in Model.RecentInvoices)
+                    {
+                        var status = InvoiceService.CalculateInvoiceStatus(inv);
+                        <div class="p-2 border rounded-2 d-flex align-items-center justify-content-between bg-light">
+                            <div>
+                                <div class="fw-medium text-dark text-xs">@inv.Project?.Name</div>
+                                <div class="text-xs text-muted-ff">@inv.Currency @inv.Amount.ToString("N2") • Due @inv.DueDate.ToString("MMM dd")</div>
+                            </div>
+                            @if (status == InvoiceStatus.Paid)
+                            {
+                                <span class="badge-ff badge-success badge-sm">Paid</span>
+                            }
+                            else if (status == InvoiceStatus.Overdue)
+                            {
+                                <span class="badge-ff badge-danger badge-sm">Overdue</span>
+                            }
+                            else if (status == InvoiceStatus.PartiallyPaid)
+                            {
+                                <span class="badge-ff badge-info badge-sm">Partial</span>
+                            }
+                            else
+                            {
+                                <span class="badge-ff badge-neutral badge-sm">Unpaid</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 </div>

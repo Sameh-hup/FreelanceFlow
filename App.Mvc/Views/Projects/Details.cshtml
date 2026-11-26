@@ -1,0 +1,276 @@
+@model App.Mvc.ViewModels.ProjectViewModel
+@inject App.BLL.Interfaces.Services.ITaskService TaskService
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-xs text-secondary-ff text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Projects
+    </a>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mt-2">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="page-title fs-4 fw-bold text-dark mb-0">@Model.Name</h1>
+                @if (Model.Health == ProjectHealth.Critical)
+                {
+                    <span class="badge-ff badge-danger badge-sm"><i class="bi bi-exclamation-triangle-fill me-1"></i> Critical</span>
+                }
+                else if (Model.Health == ProjectHealth.AttentionRequired)
+                {
+                    <span class="badge-ff badge-warning badge-sm"><i class="bi bi-exclamation-circle me-1"></i> Attention</span>
+                }
+                else
+                {
+                    <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle me-1"></i> Healthy</span>
+                }
+                <span class="badge-ff badge-indigo badge-sm">@Model.Status</span>
+            </div>
+            <p class="page-subtitle text-secondary-ff text-sm mb-0">Client: <strong class="text-dark">@Model.ClientName</strong></p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Change Status Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-sm btn-secondary-ff dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Status: @Model.Status
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end text-sm">
+                    @foreach (var s in Enum.GetValues<ProjectStatus>())
+                    {
+                        <li>
+                            <form asp-action="UpdateStatus" asp-route-id="@Model.ID" asp-route-newStatus="@s" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item @(Model.Status == s ? "active" : "")">@s</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary-ff" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+                <i class="bi bi-flag-fill me-1"></i> Add Milestone
+            </button>
+            <a asp-controller="Invoices" asp-action="Create" asp-route-projectId="@Model.ID" class="btn btn-sm btn-primary-ff">
+                <i class="bi bi-receipt me-1"></i> Create Invoice
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Project Overview Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Budget</span>
+            <span class="fs-5 fw-bold text-dark mt-1 d-block">@Model.Currency @Model.Budget.ToString("N2")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Timeline</span>
+            <span class="fs-6 fw-bold text-dark mt-1 d-block">@Model.StartDate.ToString("MMM dd") - @Model.Deadline.ToString("MMM dd, yyyy")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Progress</span>
+            <div class="d-flex align-items-center gap-2 mt-1">
+                <div class="progress flex-grow-1" style="height: 8px;">
+                    <div class="progress-bar bg-primary" style="width: @(Model.Progress)%"></div>
+                </div>
+                <span class="fs-6 fw-bold text-dark">@(Model.Progress)%</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Milestones</span>
+            <span class="fs-5 fw-bold text-dark mt-1 d-block">@Model.Milestones.Count Phases</span>
+        </div>
+    </div>
+</div>
+
+<!-- Milestones and Tasks -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="fs-5 fw-semibold text-dark mb-0">Project Milestones & Deliverables</h2>
+    <button type="button" class="btn btn-sm btn-secondary-ff" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+        <i class="bi bi-plus-lg me-1"></i> Add Milestone
+    </button>
+</div>
+
+@if (Model.Milestones.Count == 0)
+{
+    <div class="ff-card p-5 text-center mb-4">
+        <div class="empty-state-icon mx-auto mb-2 text-muted-ff fs-1"><i class="bi bi-flag"></i></div>
+        <div class="empty-state-title fs-5 fw-semibold text-dark">No milestones added yet</div>
+        <p class="empty-state-description text-sm text-muted-ff mb-3" style="max-width: 400px; margin: 0 auto;">
+            Add milestones between @Model.StartDate.ToString("yyyy-MM-dd") and @Model.Deadline.ToString("yyyy-MM-dd") to track project phases.
+        </p>
+        <button type="button" class="btn btn-primary-ff" data-bs-toggle="modal" data-bs-target="#addMilestoneModal">
+            <i class="bi bi-plus-lg me-1"></i> Add First Milestone
+        </button>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-column gap-3 mb-4">
+        @foreach (var milestone in Model.Milestones)
+        {
+            var mStatus = TaskService.CalculateMilestoneStatus(milestone);
+            <div class="ff-card p-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 pb-3 mb-3 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-flag-fill text-primary"></i>
+                        <h3 class="fs-6 fw-bold text-dark mb-0">@milestone.Name</h3>
+                        <span class="badge-ff badge-indigo badge-sm">@mStatus</span>
+                        <span class="text-xs text-muted-ff">Due @milestone.DueDate.ToString("MMM dd, yyyy")</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-ghost-ff text-xs text-primary" onclick="openAddTaskModal(@milestone.ID, '@milestone.Name', '@milestone.DueDate.ToString("yyyy-MM-dd")')">
+                        <i class="bi bi-plus-lg me-1"></i> Add Task
+                    </button>
+                </div>
+
+                <!-- Tasks inside this Milestone -->
+                @if (milestone.Tasks == null || !milestone.Tasks.Any())
+                {
+                    <div class="text-center py-2 text-muted-ff text-xs">
+                        No tasks in this milestone. Click 'Add Task' to assign items.
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var task in milestone.Tasks)
+                        {
+                            <div class="p-2 border rounded-2 d-flex align-items-center justify-content-between bg-light">
+                                <div class="d-flex align-items-center gap-2">
+                                    <form asp-controller="Tasks" asp-action="UpdateStatus" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="taskId" value="@task.ID" />
+                                        <input type="hidden" name="projectId" value="@Model.ID" />
+                                        <input type="hidden" name="newStatus" value="@(task.Status == TaskItemStatus.Completed ? TaskItemStatus.Pending : TaskItemStatus.Completed)" />
+                                        <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent" title="Toggle status">
+                                            @if (task.Status == TaskItemStatus.Completed)
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-circle text-muted fs-5"></i>
+                                            }
+                                        </button>
+                                    </form>
+                                    <div>
+                                        <span class="text-sm fw-medium @(task.Status == TaskItemStatus.Completed ? "text-decoration-line-through text-muted" : "text-dark")">@task.Title</span>
+                                        <span class="text-xs text-muted-ff ms-2">Due @task.DueDate.ToString("MMM dd")</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (task.Priority == TaskPriority.High)
+                                    {
+                                        <span class="badge-ff badge-danger badge-sm">High</span>
+                                    }
+                                    else if (task.Priority == TaskPriority.Medium)
+                                    {
+                                        <span class="badge-ff badge-warning badge-sm">Medium</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-ff badge-info badge-sm">Low</span>
+                                    }
+                                    <span class="badge-ff badge-neutral badge-sm">@task.Status</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+<!-- Add Milestone Modal -->
+<div class="modal fade" id="addMilestoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form asp-controller="Milestones" asp-action="Add" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProjectID" value="@Model.ID" />
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6 fw-semibold">Add Project Milestone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-sm fw-medium text-dark">Milestone Name</label>
+                        <input type="text" name="Name" class="form-control" placeholder="e.g. Phase 1: Wireframing & UX" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-sm fw-medium text-dark">Due Date</label>
+                        <input type="date" name="DueDate" class="form-control" min="@Model.StartDate.ToString("yyyy-MM-dd")" max="@Model.Deadline.ToString("yyyy-MM-dd")" value="@Model.Deadline.ToString("yyyy-MM-dd")" required />
+                        <div class="form-text text-xs text-muted-ff">Must be between @Model.StartDate.ToString("yyyy-MM-dd") and @Model.Deadline.ToString("yyyy-MM-dd") (BR-02)</div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-sm btn-secondary-ff" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary-ff"><i class="bi bi-flag-fill me-1"></i> Save Milestone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form asp-controller="Tasks" asp-action="Add" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProjectID" value="@Model.ID" />
+                <input type="hidden" name="MilestoneID" id="modalTaskMilestoneId" />
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6 fw-semibold">Add Task to <span id="modalTaskMilestoneName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-sm fw-medium text-dark">Task Title</label>
+                        <input type="text" name="Title" class="form-control" placeholder="e.g. Design mobile navbar responsive layout" required />
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-sm fw-medium text-dark">Priority</label>
+                            <select name="Priority" class="form-select">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-sm fw-medium text-dark">Due Date</label>
+                            <input type="date" name="DueDate" id="modalTaskDueDate" class="form-control" required />
+                            <div class="form-text text-xs text-muted-ff">Cannot exceed Milestone Due Date (BR-03)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-sm btn-secondary-ff" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary-ff"><i class="bi bi-check2 me-1"></i> Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openAddTaskModal(milestoneId, milestoneName, milestoneDueDate) {
+            document.getElementById('modalTaskMilestoneId').value = milestoneId;
+            document.getElementById('modalTaskMilestoneName').textContent = milestoneName;
+            const dueDateInput = document.getElementById('modalTaskDueDate');
+            dueDateInput.max = milestoneDueDate;
+            dueDateInput.value = milestoneDueDate;
+            const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+            modal.show();
+        }
+    </script>
+}

@@ -1,0 +1,66 @@
+@model List<App.Mvc.ViewModels.ProjectViewModel>
+@{
+    ViewData["Title"] = "My Projects";
+}
+
+<div class="mb-4">
+    <h1 class="page-title fs-4 fw-bold text-dark mb-1">My Projects</h1>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Track real-time progress, milestones, and deliverables</p>
+</div>
+
+<div class="ff-card overflow-hidden">
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state text-center py-5">
+            <div class="empty-state-icon mx-auto mb-2 text-muted-ff fs-1"><i class="bi bi-kanban"></i></div>
+            <div class="empty-state-title fs-5 fw-semibold text-dark">No projects yet</div>
+            <p class="empty-state-description text-sm text-muted-ff mb-3">Your freelancer has not assigned any active projects to your portal account yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-sm">
+                <thead class="table-light text-xs text-uppercase text-secondary-ff">
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Timeline</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th class="text-end">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var proj in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="ProjectDetails" asp-route-id="@proj.ID" class="fw-semibold text-dark">@proj.Name</a>
+                                <div class="text-xs text-muted-ff">@proj.Currency @proj.Budget.ToString("N2")</div>
+                            </td>
+                            <td>
+                                <span class="text-secondary-ff text-xs">@proj.StartDate.ToString("MMM dd") - @proj.Deadline.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td style="min-width: 140px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" style="width: @(proj.Progress)%"></div>
+                                    </div>
+                                    <span class="text-xs text-muted-ff">@(proj.Progress)%</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-ff badge-indigo badge-sm">@proj.Status</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="ProjectDetails" asp-route-id="@proj.ID" class="btn btn-sm btn-ghost-ff p-1">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

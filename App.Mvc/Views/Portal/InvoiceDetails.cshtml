@@ -1,0 +1,97 @@
+@model App.Mvc.ViewModels.InvoiceViewModel
+@{
+    ViewData["Title"] = $"Invoice INV-{Model.ID:D4}";
+}
+
+<div class="mb-4">
+    <a asp-action="Invoices" class="text-xs text-secondary-ff text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to My Invoices
+    </a>
+    <div class="d-flex align-items-center gap-2 mt-2">
+        <h1 class="page-title fs-4 fw-bold text-dark mb-0">INV-@Model.ID.ToString("D4")</h1>
+        @if (Model.Status == InvoiceStatus.Paid)
+        {
+            <span class="badge-ff badge-success badge-sm"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+        }
+        else if (Model.Status == InvoiceStatus.Overdue)
+        {
+            <span class="badge-ff badge-danger badge-sm"><i class="bi bi-exclamation-octagon-fill me-1"></i> Overdue</span>
+        }
+        else if (Model.Status == InvoiceStatus.PartiallyPaid)
+        {
+            <span class="badge-ff badge-info badge-sm"><i class="bi bi-pie-chart-fill me-1"></i> Partial</span>
+        }
+        else
+        {
+            <span class="badge-ff badge-neutral badge-sm">Unpaid</span>
+        }
+    </div>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Project: @Model.ProjectName</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Amount Invoiced</span>
+            <span class="fs-5 fw-bold text-dark mt-1 d-block">@Model.Currency @Model.Amount.ToString("N2")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Paid to Date</span>
+            <span class="fs-5 fw-bold text-success mt-1 d-block">@Model.Currency @Model.TotalPaid.ToString("N2")</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Remaining Balance</span>
+            <span class="fs-5 fw-bold @(Model.RemainingBalance > 0 ? "text-danger" : "text-dark") mt-1 d-block">
+                @Model.Currency @Model.RemainingBalance.ToString("N2")
+            </span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="ff-card p-3">
+            <span class="text-xs text-secondary-ff text-uppercase fw-semibold d-block">Payment Due</span>
+            <span class="fs-6 fw-bold text-dark mt-1 d-block">@Model.DueDate.ToString("MMM dd, yyyy")</span>
+        </div>
+    </div>
+</div>
+
+<div class="ff-card p-4">
+    <h2 class="fs-6 fw-semibold text-dark mb-3">Recorded Payments (@Model.Payments.Count)</h2>
+    @if (Model.Payments.Count == 0)
+    {
+        <div class="text-center py-4 text-muted-ff text-xs">No payments recorded on this invoice yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-sm">
+                <thead class="table-light text-xs text-uppercase text-secondary-ff">
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount Paid</th>
+                        <th>Notes / Reference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Payments)
+                    {
+                        <tr>
+                            <td>
+                                <span class="fw-semibold text-dark">@p.PaymentDate.ToString("MMM dd, yyyy")</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-success">+@p.Currency @p.Amount.ToString("N2")</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary-ff">@(string.IsNullOrEmpty(p.Notes) ? "—" : p.Notes)</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,68 @@
+@model App.Mvc.ViewModels.RegisterClientByInviteViewModel
+@{
+    ViewData["Title"] = "Activate Client Account";
+}
+
+<div class="min-vh-100 d-flex flex-column justify-content-center py-5 bg-light">
+    <div class="container" style="max-width: 480px;">
+        <div class="text-center mb-4">
+            <div class="sidebar-brand-logo mx-auto mb-2" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                <i class="bi bi-stack"></i>
+            </div>
+            <h1 class="h1 fs-3 fw-bold mb-1 text-dark">FreelanceFlow</h1>
+            <p class="text-secondary-ff text-sm">Client Portal Activation</p>
+        </div>
+
+        <div class="ff-card p-4 p-md-5 mb-4 shadow-sm bg-white rounded-3">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge-ff badge-success badge-sm">Client Portal</span>
+                <span class="text-xs text-muted-ff">Invitation Access</span>
+            </div>
+            <h2 class="h2 fs-5 mb-1 text-dark fw-semibold">Complete your registration</h2>
+            <p class="text-xs text-muted-ff mb-3">Set up your password to access your client portal</p>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger py-2 px-3 text-sm mb-3">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <form asp-action="ClientInvite" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Token" />
+
+                <div class="mb-3">
+                    <label class="form-label text-sm fw-medium text-dark">Assigned Email</label>
+                    <input asp-for="Email" class="form-control bg-light" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label text-sm fw-medium text-dark"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Your full name" required autofocus />
+                    <span asp-validation-for="Name" class="text-danger text-xs"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label text-sm fw-medium text-dark"></label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Create a password (min 6 characters)" required />
+                    <span asp-validation-for="Password" class="text-danger text-xs"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="ConfirmPassword" class="form-label text-sm fw-medium text-dark"></label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm your password" required />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger text-xs"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary-ff w-100 py-2">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Activate Account & Log In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

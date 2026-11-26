@@ -1,0 +1,71 @@
+@model App.Mvc.ViewModels.InvoiceViewModel
+@{
+    ViewData["Title"] = "Create Invoice";
+    var projects = ViewBag.Projects as List<App.DAL.Entities.Project> ?? new();
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-xs text-secondary-ff text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Invoices
+    </a>
+    <h1 class="page-title fs-4 fw-bold text-dark mt-2 mb-1">Create Invoice</h1>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Issue an invoice linked to an active project deliverables</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="ff-card p-4 p-md-5 bg-white shadow-sm rounded-3">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger py-2 px-3 text-sm mb-4">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="ProjectID" class="form-label text-sm fw-medium text-dark"></label>
+                    <select asp-for="ProjectID" class="form-select" required>
+                        <option value="">-- Choose a Project --</option>
+                        @foreach (var p in projects)
+                        {
+                            <option value="@p.ID" selected="@(Model.ProjectID == p.ID)">@p.Name (@p.Client?.CompanyName) - @p.Currency</option>
+                        }
+                    </select>
+                    <span asp-validation-for="ProjectID" class="text-danger text-xs"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Amount" class="form-label text-sm fw-medium text-dark">Invoice Amount</label>
+                    <input asp-for="Amount" type="number" step="0.01" class="form-control" placeholder="1500.00" required autofocus />
+                    <span asp-validation-for="Amount" class="text-danger text-xs"></span>
+                    <div class="form-text text-xs text-muted-ff">Currency is automatically inherited from the selected project (BR-08)</div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="IssueDate" class="form-label text-sm fw-medium text-dark"></label>
+                        <input asp-for="IssueDate" type="date" class="form-control" required />
+                        <span asp-validation-for="IssueDate" class="text-danger text-xs"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DueDate" class="form-label text-sm fw-medium text-dark"></label>
+                        <input asp-for="DueDate" type="date" class="form-control" required />
+                        <span asp-validation-for="DueDate" class="text-danger text-xs"></span>
+                        <div class="form-text text-xs text-muted-ff">Must be on or after Issue Date (BR-15)</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-secondary-ff">Cancel</a>
+                    <button type="submit" class="btn btn-primary-ff"><i class="bi bi-receipt me-1"></i> Issue Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

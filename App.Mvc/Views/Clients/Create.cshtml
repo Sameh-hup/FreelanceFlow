@@ -1,0 +1,62 @@
+@model App.Mvc.ViewModels.ClientViewModel
+@{
+    ViewData["Title"] = "New Client";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="text-xs text-secondary-ff text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Clients
+    </a>
+    <h1 class="page-title fs-4 fw-bold text-dark mt-2 mb-1">Add New Client</h1>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Create a client profile to organize your projects and invoices</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="ff-card p-4 p-md-5 bg-white shadow-sm rounded-3">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger py-2 px-3 text-sm mb-4">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="CompanyName" class="form-label text-sm fw-medium text-dark"></label>
+                    <input asp-for="CompanyName" class="form-control" placeholder="e.g. Acme Corporation" required autofocus />
+                    <span asp-validation-for="CompanyName" class="text-danger text-xs"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label text-sm fw-medium text-dark"></label>
+                        <input asp-for="Phone" class="form-control" placeholder="+1 (555) 123-4567" required />
+                        <span asp-validation-for="Phone" class="text-danger text-xs"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Address" class="form-label text-sm fw-medium text-dark"></label>
+                        <input asp-for="Address" class="form-control" placeholder="123 Business St, City" required />
+                        <span asp-validation-for="Address" class="text-danger text-xs"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Notes" class="form-label text-sm fw-medium text-dark">Internal Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Optional notes about billing preferences, points of contact, etc."></textarea>
+                    <span asp-validation-for="Notes" class="text-danger text-xs"></span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-secondary-ff">Cancel</a>
+                    <button type="submit" class="btn btn-primary-ff"><i class="bi bi-check2 me-1"></i> Save Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
