@@ -2,26 +2,23 @@ namespace App.BLL.Services.Clock;
 
 public class SystemClock : IClock
 {
+    private static readonly TimeZoneInfo CairoTimeZone = GetCairoTimeZone();
+
     public DateTime UtcNow => DateTime.UtcNow;
 
     public DateOnly UtcToday => DateOnly.FromDateTime(DateTime.UtcNow);
 
-    public DateOnly CairoToday
-    {
-        get
-        {
-            TimeZoneInfo cairoZone;
-            try
-            {
-                cairoZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                cairoZone = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
-            }
+    public DateOnly CairoToday => DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CairoTimeZone));
 
-            DateTime cairoDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cairoZone);
-            return DateOnly.FromDateTime(cairoDateTime);
+    private static TimeZoneInfo GetCairoTimeZone()
+    {
+        try
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
         }
     }
 }

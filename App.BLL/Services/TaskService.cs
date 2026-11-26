@@ -32,11 +32,13 @@ public class TaskService : ITaskService
 
     public async Task<bool> AddMilestoneAsync(Milestone milestone, string freelancerId)
     {
-        var project = await _projectRepository.GetProjectDetailsAsync(milestone.ProjectID, freelancerId);
+        var project = await _context.Projects
+            .Include(p => p.Client)
+            .FirstOrDefaultAsync(p => p.ID == milestone.ProjectID && p.Client.UserID == freelancerId && !p.Client.IsDeleted);
+
         if (project == null)
             throw new UnauthorizedAccessException("Project not found or you do not have permission to access it.");
 
-        // BR-02: Milestone.DueDate between Project.StartDate and Project.Deadline inclusive
         if (milestone.DueDate < project.StartDate || milestone.DueDate > project.Deadline)
         {
             throw new ArgumentOutOfRangeException(
@@ -53,12 +55,11 @@ public class TaskService : ITaskService
         var milestone = await _context.Milestones
             .Include(m => m.Project)
                 .ThenInclude(p => p.Client)
-            .FirstOrDefaultAsync(m => m.ID == task.MilestoneID);
+            .FirstOrDefaultAsync(m => m.ID == task.MilestoneID && m.Project.Client.UserID == freelancerId && !m.Project.Client.IsDeleted);
 
-        if (milestone == null || milestone.Project.Client.UserID != freelancerId || milestone.Project.Client.IsDeleted)
+        if (milestone == null)
             throw new UnauthorizedAccessException("Milestone not found or you do not have permission to access it.");
 
-        // BR-03: Task.DueDate <= Milestone.DueDate
         if (task.DueDate > milestone.DueDate)
         {
             throw new ArgumentOutOfRangeException(
@@ -78,37 +79,37 @@ public class TaskService : ITaskService
             .Include(t => t.Milestone)
                 .ThenInclude(m => m.Project)
                     .ThenInclude(p => p.Client)
-            .FirstOrDefaultAsync(t => t.ID == taskId);
+            .FirstOrDefaultAsync(t => t.ID == taskId && t.Milestone.Project.Client.UserID == freelancerId && !t.Milestone.Project.Client.IsDeleted);
 
-        if (task == null || task.Milestone.Project.Client.UserID != freelancerId || task.Milestone.Project.Client.IsDeleted)
+        if (task == null)
             return false;
 
-        // FR-17: Status update is manual only
         task.Status = newStatus;
+
         _taskRepository.Update(task);
         return await _taskRepository.SaveChangesAsync() > 0;
     }
 
     public async Task<List<TaskItem>> GetOverdueTasksAsync(string freelancerId)
     {
-        var today = _clock.UtcToday;
+        var today = _clock.CairoToday;
 
-        // BR-11: Retrieve all incomplete tasks where DueDate < today across all active projects of freelancer
         return await _context.Tasks
             .Include(t => t.Milestone)
                 .ThenInclude(m => m.Project)
-            .Where(t => t.Milestone.Project.Client.UserID == freelancerId
-                        && !t.Milestone.Project.Client.IsDeleted
-                        && t.Milestone.Project.Status != ProjectStatus.Cancelled
-                        && t.Milestone.Project.Status != ProjectStatus.Completed
-                        && t.Status != TaskItemStatus.Completed
-                        && t.DueDate < today)
+                    .ThenInclude(p => p.Client)
+            .Where(t => t.Milestone.Project.Client.UserID == freelancerId &&
+                        !t.Milestone.Project.Client.IsDeleted &&
+                        (t.Milestone.Project.Status == ProjectStatus.NotStarted ||
+                         t.Milestone.Project.Status == ProjectStatus.InProgress ||
+                         t.Milestone.Project.Status == ProjectStatus.OnHold) &&
+                        t.Status != TaskItemStatus.Completed &&
+                        t.DueDate < today)
             .ToListAsync();
     }
 
     public MilestoneStatus CalculateMilestoneStatus(Milestone milestone)
     {
-        // BR-12: Pure evaluation in sequential order
         var tasks = milestone.Tasks?.ToList() ?? new List<TaskItem>();
 
         if (tasks.Count == 0 || tasks.All(t => t.Status == TaskItemStatus.Pending))
@@ -122,6 +123,11 @@ public class TaskService : ITaskService
         }
 
         return MilestoneStatus.InProgress;
+    }
+
+    public bool IsTaskOverdue(TaskItem task)
+    {
+        return task.Status != TaskItemStatus.Completed && task.DueDate < _clock.CairoToday;
     }
 
     // Overloads for int freelancerId

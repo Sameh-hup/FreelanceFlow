@@ -48,14 +48,13 @@ public class ProjectService : IProjectService
 
     public async Task<bool> CreateProjectAsync(Project project, string freelancerId)
     {
-        // BR-04: Verify client ownership
         var hasAccess = await _accessService.CanFreelancerAccessClientAsync(freelancerId, project.ClientID);
         if (!hasAccess)
-            throw new UnauthorizedAccessException("You do not own the selected client (BR-04).");
+            throw new UnauthorizedAccessException("You do not own the selected client.");
 
         // BR-01: Deadline > StartDate
         if (project.Deadline <= project.StartDate)
-            throw new ArgumentException("Project Deadline must be strictly after the Start Date (BR-01).");
+            throw new ArgumentException("Project Deadline must be strictly after the Start Date.");
 
         project.Status = ProjectStatus.NotStarted;
         project.CreatedAtUtc = _clock.UtcNow;
@@ -89,7 +88,7 @@ public class ProjectService : IProjectService
         // BR-06 / FR-13: Check if project has any invoices
         if (project.Invoices != null && project.Invoices.Any())
         {
-            throw new InvalidOperationException("Cannot delete project with existing invoices. Set status to Cancelled instead (BR-06 / FR-13).");
+            throw new InvalidOperationException("Cannot delete project with existing invoices. Set status to Cancelled instead.");
         }
 
         _projectRepository.Delete(project);
@@ -98,7 +97,6 @@ public class ProjectService : IProjectService
 
     public int CalculateProgress(Project project)
     {
-        // BR-10: Progress calculation
         if (project.Milestones == null || !project.Milestones.Any())
             return 0;
 
@@ -116,9 +114,12 @@ public class ProjectService : IProjectService
 
     public ProjectHealth CalculateHealth(Project project)
     {
-        // BR-31 & Section 8
-        if (project.Status == ProjectStatus.Completed || project.Status == ProjectStatus.Cancelled)
+        if (project.Status != ProjectStatus.NotStarted &&
+            project.Status != ProjectStatus.InProgress &&
+            project.Status != ProjectStatus.OnHold)
+        {
             return ProjectHealth.Healthy;
+        }
 
         var allTasks = project.Milestones?
             .Where(m => m.Tasks != null)
@@ -127,11 +128,10 @@ public class ProjectService : IProjectService
 
         int totalTasks = allTasks.Count;
         if (totalTasks == 0)
-            return ProjectHealth.Healthy; // BR-31: No tasks = Healthy
+            return ProjectHealth.Healthy;
 
-        var today = _clock.UtcToday;
+        var today = _clock.CairoToday;
 
-        // BR-11: Overdue tasks
         int overdueCount = allTasks.Count(t => t.Status != TaskItemStatus.Completed && t.DueDate < today);
         int daysUntilDeadline = project.Deadline.DayNumber - today.DayNumber;
         int completedTasks = allTasks.Count(t => t.Status == TaskItemStatus.Completed);

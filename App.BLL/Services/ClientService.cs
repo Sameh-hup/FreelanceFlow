@@ -29,6 +29,7 @@ public class ClientService : IClientService
     public async Task<List<Client>> GetClientsAsync(string freelancerId, string? searchName = null)
     {
         var clients = await _clientRepository.GetClientsByFreelancerIdAsync(freelancerId);
+
         if (!string.IsNullOrWhiteSpace(searchName))
         {
             var search = searchName.Trim();
@@ -36,6 +37,7 @@ public class ClientService : IClientService
                 .Where(c => c.CompanyName.Contains(search, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+
         return clients;
     }
 
@@ -50,6 +52,7 @@ public class ClientService : IClientService
     public async Task<bool> CreateClientAsync(Client client, string freelancerId)
     {
         client.UserID = freelancerId;
+        client.CreatedAtUtc = _clock.UtcNow;
         client.IsDeleted = false;
         client.DeletedAtUtc = null;
 
@@ -88,11 +91,13 @@ public class ClientService : IClientService
         client.DeletedAtUtc = _clock.UtcNow;
         _clientRepository.Update(client);
 
-        // BR-05 / BR-26: When a client is soft-deleted, their linked user account (Users.ClientId) is immediately blocked
-        var linkedUser = await _context.Users.FirstOrDefaultAsync(u => u.ClientId == clientId);
-        if (linkedUser != null)
+        var linkedUsers = await _context.Users
+            .Where(u => u.ClientId == clientId)
+            .ToListAsync();
+
+        foreach (var user in linkedUsers)
         {
-            linkedUser.IsActive = false;
+            user.IsActive = false;
         }
 
         return await _context.SaveChangesAsync() > 0;

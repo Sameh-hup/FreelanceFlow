@@ -8,15 +8,17 @@ public class ClientValidator : AbstractValidator<Client>
     public ClientValidator()
     {
         RuleFor(c => c.CompanyName)
-            .NotEmpty().WithMessage("Company Name is required.")
-            .MaximumLength(150).WithMessage("Company Name cannot exceed 150 characters.");
+            .NotEmpty()
+            .MaximumLength(150)
+            .WithMessage("Company name is required and cannot exceed 150 characters.");
 
         RuleFor(c => c.Phone)
-            .NotEmpty().WithMessage("Phone number is required.")
-            .MaximumLength(50).WithMessage("Phone cannot exceed 50 characters.");
+            .NotEmpty()
+            .Matches(@"^[0-9+\s-]{8,20}$")
+            .WithMessage("Please enter a valid phone number.");
 
         RuleFor(c => c.Address)
-            .NotEmpty().WithMessage("Address is required.")
-            .MaximumLength(255).WithMessage("Address cannot exceed 255 characters.");
+            .MaximumLength(250)
+            .WithMessage("Address cannot exceed 250 characters.");
     }
 }

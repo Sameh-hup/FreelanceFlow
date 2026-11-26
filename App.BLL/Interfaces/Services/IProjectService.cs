@@ -13,10 +13,10 @@ public interface IProjectService
     int CalculateProgress(Project project);
     ProjectHealth CalculateHealth(Project project);
 
-    // Overloads for int freelancerId
-    Task<List<Project>> GetProjectsAsync(int freelancerId, string? searchName = null);
-    Task<Project?> GetProjectDetailsAsync(int projectId, int freelancerId);
-    Task<bool> CreateProjectAsync(Project project, int freelancerId);
-    Task<bool> UpdateProjectStatusAsync(int projectId, ProjectStatus newStatus, int freelancerId);
-    Task<bool> DeleteProjectAsync(int projectId, int freelancerId);
+    // Overloads for int freelancerId / legacy compatibility
+    Task<List<Project>> GetProjectsAsync(int freelancerId, string? searchName = null) => GetProjectsAsync(freelancerId.ToString(), searchName);
+    Task<Project?> GetProjectDetailsAsync(int projectId, int freelancerId) => GetProjectDetailsAsync(projectId, freelancerId.ToString());
+    Task<bool> CreateProjectAsync(Project project, int freelancerId) => CreateProjectAsync(project, freelancerId.ToString());
+    Task<bool> UpdateProjectStatusAsync(int projectId, ProjectStatus newStatus, int freelancerId) => UpdateProjectStatusAsync(projectId, newStatus, freelancerId.ToString());
+    Task<bool> DeleteProjectAsync(int projectId, int freelancerId) => DeleteProjectAsync(projectId, freelancerId.ToString());
 }

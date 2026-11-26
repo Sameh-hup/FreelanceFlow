@@ -12,9 +12,12 @@ public class TaskValidator : AbstractValidator<TaskItem>
             .MaximumLength(200).WithMessage("Task title cannot exceed 200 characters.");
 
         RuleFor(t => t.Priority)
-            .IsInEnum().WithMessage("Invalid task priority.");
+            .IsInEnum().WithMessage("Please select a valid priority.");
 
         RuleFor(t => t.Status)
             .IsInEnum().WithMessage("Invalid task status.");
+
+        RuleFor(t => t.DueDate)
+            .NotEmpty().WithMessage("Due date is required.");
     }
 }
