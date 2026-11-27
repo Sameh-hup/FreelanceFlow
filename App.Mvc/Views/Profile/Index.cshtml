@@ -1,0 +1,73 @@
+@model App.Mvc.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+    var initials = Model.FullName.Length >= 2 ? Model.FullName.Substring(0, 2).ToUpper() : Model.FullName.ToUpper();
+}
+
+<div class="page-header mb-4">
+    <h1 class="page-title fs-4 fw-bold text-dark mb-1">My Profile</h1>
+    <p class="page-subtitle text-secondary-ff text-sm mb-0">Manage your personal information and account security</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="ff-card p-4 text-center">
+            <div class="avatar-ff avatar-indigo mx-auto mb-3 ff-avatar-xl">@initials</div>
+            <h2 class="h2 fs-5 mb-1">@Model.FullName</h2>
+            <div class="text-sm text-secondary-ff mb-2">@Model.Email</div>
+            <span class="badge-ff badge-indigo badge-sm">@Model.RoleName</span>
+            <div class="text-xs text-muted-ff mt-3">Member since @Model.MemberSinceUtc.ToString("MMM dd, yyyy")</div>
+        </div>
+
+        @if (Model.RoleName == "Freelancer")
+        {
+            <div class="row g-2 mt-1">
+                <div class="col-4"><div class="ff-card p-3 text-center"><div class="fw-bold fs-4">@Model.Clients</div><div class="text-xs text-muted-ff">Clients</div></div></div>
+                <div class="col-4"><div class="ff-card p-3 text-center"><div class="fw-bold fs-4">@Model.Projects</div><div class="text-xs text-muted-ff">Projects</div></div></div>
+                <div class="col-4"><div class="ff-card p-3 text-center"><div class="fw-bold fs-4">@Model.Invoices</div><div class="text-xs text-muted-ff">Invoices</div></div></div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-8">
+        <div class="ff-card p-4 mb-4">
+            <h2 class="h2 fs-6 mb-3">Personal information</h2>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger py-2 px-3 text-sm">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+            <form asp-action="Index" method="post">
+                @Html.AntiForgeryToken()
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="+20 100 123 4567" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                        <div class="form-text text-xs text-muted-ff">Your email is your sign-in name and can't be changed here.</div>
+                    </div>
+                </div>
+                <div class="mt-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary-ff"><i class="bi bi-check2 me-1"></i> Save changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="ff-card p-4">
+            <h2 class="h2 fs-6 mb-1">Security</h2>
+            <p class="text-sm text-secondary-ff">Keep your account safe by using a strong password.</p>
+            <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-secondary-ff"><i class="bi bi-shield-lock me-1"></i> Change password</a>
+        </div>
+    </div>
+</div>

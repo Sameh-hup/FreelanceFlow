@@ -93,3 +93,23 @@ public class RegisterClientByInviteViewModel
     [Display(Name = "Confirm Password")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
+
+public class ProfileViewModel
+{
+    [Required(ErrorMessage = "Full Name is required")]
+    [Display(Name = "Full Name")]
+    [MaxLength(100)]
+    public string FullName { get; set; } = string.Empty;
+
+    [Phone]
+    [Display(Name = "Phone Number")]
+    public string? PhoneNumber { get; set; }
+
+    // Read-only info shown on the page
+    public string Email { get; set; } = string.Empty;
+    public string RoleName { get; set; } = string.Empty;
+    public DateTime MemberSinceUtc { get; set; }
+    public int Clients { get; set; }
+    public int Projects { get; set; }
+    public int Invoices { get; set; }
+}

@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="App.BLL.Tests/App.BLL.Tests.csproj" />
-  <Project Path="App.BLL/App.BLL.csproj" />
-  <Project Path="App.DAL/App.DAL.csproj" />
-  <Project Path="App.Mvc/App.Mvc.csproj" />
-</Solution>

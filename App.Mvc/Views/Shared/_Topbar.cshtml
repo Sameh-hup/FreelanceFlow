@@ -6,6 +6,7 @@
 @{
     var user = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
     var pageTitle = ViewData["Title"]?.ToString() ?? "Dashboard";
+    var roleName = User.IsInRole("Admin") ? "Admin" : User.IsInRole("Client") ? "Client" : "Freelancer";
 }
 
 <header class="app-topbar">
@@ -27,11 +28,35 @@
 
         @if (user != null)
         {
-            <div class="d-flex align-items-center gap-2 px-2 py-1 bg-light rounded-pill">
-                <div class="avatar-ff avatar-sm avatar-indigo">
-                    @user.FullName.Substring(0, Math.Min(2, user.FullName.Length)).ToUpper()
+            @await Component.InvokeAsync("Notifications")
+
+            <!-- Profile menu -->
+            <div class="dropdown">
+                <button type="button" class="ff-profile-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar-ff avatar-sm avatar-indigo">
+                        @user.FullName.Substring(0, Math.Min(2, user.FullName.Length)).ToUpper()
+                    </div>
+                    <span class="text-xs fw-medium text-dark d-none d-sm-inline">@user.FullName</span>
+                    <i class="bi bi-chevron-down text-xs text-muted-ff d-none d-sm-inline"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end ff-dropdown ff-profile-menu p-0">
+                    <div class="ff-dd-header">
+                        <div class="fw-bold">@user.FullName</div>
+                        <div class="text-sm text-secondary-ff">@user.Email</div>
+                        <span class="badge-ff badge-indigo badge-sm mt-2">@roleName</span>
+                    </div>
+                    <div class="p-2">
+                        <a class="ff-dd-item" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> My Profile</a>
+                        <a class="ff-dd-item" asp-controller="Account" asp-action="ChangePassword"><i class="bi bi-shield-lock"></i> Change Password</a>
+                        <a class="ff-dd-item" href="#" onclick="toggleTheme(); return false;"><i class="bi bi-moon-stars"></i> Dark / Light Mode</a>
+                    </div>
+                    <div class="p-2 border-top">
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="ff-dd-item text-danger w-100 border-0 bg-transparent"><i class="bi bi-box-arrow-right"></i> Sign out</button>
+                        </form>
+                    </div>
                 </div>
-                <span class="text-xs fw-medium text-dark d-none d-sm-inline">@user.FullName</span>
             </div>
         }
     </div>

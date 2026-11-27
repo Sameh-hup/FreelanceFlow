@@ -1,0 +1,37 @@
+@model List<App.Mvc.ViewComponents.NotificationItem>
+
+<div class="dropdown">
+    <button type="button" class="btn btn-sm btn-ghost-ff p-2 rounded-circle position-relative ff-bell" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications">
+        <i class="bi bi-bell fs-5"></i>
+        @if (Model.Count > 0)
+        {
+            <span class="ff-bell-dot"></span>
+        }
+    </button>
+    <div class="dropdown-menu dropdown-menu-end ff-dropdown ff-notif-menu p-0">
+        <div class="ff-dd-header d-flex align-items-center justify-content-between">
+            <span class="fw-semibold">Activity &amp; Alerts</span>
+            <span class="badge-ff badge-indigo badge-sm">@Model.Count recent</span>
+        </div>
+        <div class="ff-notif-list">
+            @if (Model.Count == 0)
+            {
+                <div class="text-center text-muted-ff text-sm py-5">
+                    <i class="bi bi-check2-circle fs-3 d-block mb-1"></i>
+                    You're all caught up.
+                </div>
+            }
+            @foreach (var n in Model)
+            {
+                <a href="@(n.Url ?? "#")" class="ff-notif-item text-decoration-none">
+                    <span class="ff-notif-icon ff-tone-@n.Tone"><i class="bi @n.Icon"></i></span>
+                    <span class="flex-grow-1">
+                        <span class="d-block fw-semibold text-sm text-dark">@n.Title</span>
+                        <span class="d-block text-xs text-secondary-ff">@n.Text</span>
+                        <span class="d-block text-xs text-muted-ff mt-1">@n.When.ToString("yyyy-MM-dd HH:mm")</span>
+                    </span>
+                </a>
+            }
+        </div>
+    </div>
+</div>
