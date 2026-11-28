@@ -131,7 +131,7 @@ else
                         <button type="button" class="btn btn-sm btn-ghost-ff text-xs text-secondary-ff p-1" title="Edit Milestone" onclick="openEditMilestoneModal(@milestone.ID, '@Html.Raw(milestone.Name.Replace("'", "\\'"))', '@milestone.DueDate.ToString("yyyy-MM-dd")')">
                             <i class="bi bi-pencil"></i>
                         </button>
-                        <form asp-controller="Milestones" asp-action="Delete" method="post" class="d-inline m-0" onsubmit="return confirm('Are you sure you want to delete this milestone and all its tasks?');">
+                        <form asp-controller="Milestones" asp-action="Delete" method="post" class="d-inline m-0" data-ff-inline>
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="milestoneId" value="@milestone.ID" />
                             <input type="hidden" name="projectId" value="@Model.ID" />
@@ -195,7 +195,7 @@ else
                                         <button type="button" class="btn btn-sm btn-ghost-ff p-1 text-secondary-ff" title="Edit Task" onclick="openEditTaskModal(@task.ID, '@Html.Raw(task.Title.Replace("'", "\\'"))', '@task.Priority', '@task.DueDate.ToString("yyyy-MM-dd")', '@milestone.DueDate.ToString("yyyy-MM-dd")')">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <form asp-controller="Tasks" asp-action="Delete" method="post" class="d-inline m-0" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                        <form asp-controller="Tasks" asp-action="Delete" method="post" class="d-inline m-0" data-ff-inline>
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="taskId" value="@task.ID" />
                                             <input type="hidden" name="projectId" value="@Model.ID" />

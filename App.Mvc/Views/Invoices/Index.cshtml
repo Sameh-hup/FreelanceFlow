@@ -107,7 +107,7 @@
                                     <a asp-action="Details" asp-route-id="@inv.ID" class="btn btn-sm btn-ghost-ff p-1 text-secondary-ff" title="View details">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form asp-action="Delete" asp-route-id="@inv.ID" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete INV-@inv.ID.ToString("D4")?');">
+                                    <form asp-action="Delete" asp-route-id="@inv.ID" method="post" class="d-inline" data-ff-confirm="Delete INV-@inv.ID.ToString("D4")?" data-ff-message="This invoice will be deleted. This action cannot be undone.">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-ghost-ff p-1 text-danger" title="Delete">
                                             <i class="bi bi-trash"></i>

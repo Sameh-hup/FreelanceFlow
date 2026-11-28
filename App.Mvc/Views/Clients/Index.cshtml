@@ -110,7 +110,7 @@
                                     <a asp-action="Details" asp-route-id="@client.ID" class="btn btn-sm btn-ghost-ff p-1 text-secondary-ff" title="Details">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form asp-action="Delete" asp-route-id="@client.ID" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to move @client.CompanyName to trash?');">
+                                    <form asp-action="Delete" asp-route-id="@client.ID" method="post" class="d-inline" data-ff-confirm="Delete @client.CompanyName?" data-ff-message="This client will be moved to trash." data-ff-ok="Move to trash">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-ghost-ff p-1 text-danger" title="Delete">
                                             <i class="bi bi-trash"></i>

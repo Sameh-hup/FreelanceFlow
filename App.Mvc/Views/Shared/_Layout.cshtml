@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="~/css/global.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/theme-v2.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ff-ui.css" asp-append-version="true" />
     <!-- Immediate Theme Initialization Script (Prevents flash of light mode) -->
     <script>
         (function() {
@@ -41,27 +42,6 @@
             <div class="main-wrapper">
                 <partial name="_Topbar" />
                 <main class="main-content">
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                        <div class="toast-ff toast-success mb-4 show d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm bg-success-subtle text-success border border-success-subtle">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-check-circle-fill fs-5"></i>
-                                <span>@TempData["SuccessMessage"]</span>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="this.parentElement.remove()"></button>
-                        </div>
-                    }
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="toast-ff toast-danger mb-4 show d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm bg-danger-subtle text-danger border border-danger-subtle">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                                <span>@TempData["ErrorMessage"]</span>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="this.parentElement.remove()"></button>
-                        </div>
-                    }
-
                     @RenderBody()
                 </main>
             </div>
@@ -81,6 +61,20 @@
         <main>
             @RenderBody()
         </main>
+    }
+
+    @* Toast bridge: TempData messages become glass toasts (see wwwroot/js/ff-ui.js) *@
+    @if (TempData["SuccessMessage"] is string ffOk && TempData["InviteLink"] == null)
+    {
+        <div data-ff-toast="success" data-title="@ffOk" hidden></div>
+    }
+    @if (TempData["ErrorMessage"] is string ffErr)
+    {
+        <div data-ff-toast="error" data-title="Something went wrong" data-msg="@ffErr" hidden></div>
+    }
+    @if (TempData["WarningMessage"] is string ffWarn)
+    {
+        <div data-ff-toast="warning" data-title="Heads up" data-msg="@ffWarn" hidden></div>
     }
 
     <!-- Scripts -->
@@ -128,6 +122,7 @@
         });
     </script>
     <script src="~/js/theme-v2.js" asp-append-version="true"></script>
+    <script src="~/js/ff-ui.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

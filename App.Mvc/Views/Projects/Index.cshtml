@@ -128,7 +128,7 @@
                                     <a asp-action="Details" asp-route-id="@proj.ID" class="btn btn-sm btn-ghost-ff p-1 text-secondary-ff" title="View details">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form asp-action="Delete" asp-route-id="@proj.ID" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete @proj.Name? (Will fail if invoices exist)');">
+                                    <form asp-action="Delete" asp-route-id="@proj.ID" method="post" class="d-inline" data-ff-confirm="Delete @proj.Name?" data-ff-message="This project and its milestones will be removed. It will fail if invoices exist, and it cannot be undone.">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-ghost-ff p-1 text-danger" title="Delete">
                                             <i class="bi bi-trash"></i>
