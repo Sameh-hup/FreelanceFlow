@@ -102,20 +102,4 @@ public class ClientService : IClientService
 
         return await _context.SaveChangesAsync() > 0;
     }
-
-    // Overloads for int freelancerId
-    public Task<List<Client>> GetClientsAsync(int freelancerId, string? searchName = null)
-        => GetClientsAsync(freelancerId.ToString(), searchName);
-
-    public Task<Client?> GetClientByIdAsync(int clientId, int freelancerId)
-        => GetClientByIdAsync(clientId, freelancerId.ToString());
-
-    public Task<bool> CreateClientAsync(Client client, int freelancerId)
-        => CreateClientAsync(client, freelancerId.ToString());
-
-    public Task<bool> UpdateClientAsync(Client client, int freelancerId)
-        => UpdateClientAsync(client, freelancerId.ToString());
-
-    public Task<bool> SoftDeleteClientAsync(int clientId, int freelancerId)
-        => SoftDeleteClientAsync(clientId, freelancerId.ToString());
 }

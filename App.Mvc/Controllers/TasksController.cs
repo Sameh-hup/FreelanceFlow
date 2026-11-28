@@ -74,4 +74,46 @@ public class TasksController : Controller
 
         return RedirectToAction("Details", "Projects", new { id = projectId });
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id , int projectId ,string title , TaskPriority taskPriority,DateOnly dueDate)
+    {
+        var user = await _userManager.GetUserAsync (User);
+        if (user == null) return Challenge();
+        try
+        {
+            var task = new TaskItem
+            {
+                ID = id,
+                Title = title,
+                Priority = taskPriority,
+                DueDate = dueDate
+            };
+            var success = await _taskService.UpdateTaskAsync(task, user.Id);
+            if (success)
+                TempData["SuccessMessage"] = "Task updated successfully.";
+            else
+                TempData["ErrorMessage"] = "Could not update task.";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+        return RedirectToAction("Details", "Projects", new { id = projectId });
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int taskId, int projectId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+        var success = await _taskService.DeleteTaskAsync(taskId, user.Id);
+        if (success)
+            TempData["SuccessMessage"] = "Task deleted successfully.";
+        else
+            TempData["ErrorMessage"] = "Could not delete task.";
+        return RedirectToAction("Details", "Projects", new { id = projectId });
+    }
+
 }

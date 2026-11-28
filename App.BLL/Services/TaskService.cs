@@ -43,7 +43,7 @@ public class TaskService : ITaskService
         {
             throw new ArgumentOutOfRangeException(
                 nameof(milestone.DueDate),
-                $"Milestone Due Date ({milestone.DueDate}) must be between Project Start Date ({project.StartDate}) and Deadline ({project.Deadline}) inclusive (BR-02).");
+                $"Milestone Due Date ({milestone.DueDate}) must be between Project Start Date ({project.StartDate}) and Deadline ({project.Deadline}) inclusive .");
         }
 
         await _milestoneRepository.AddAsync(milestone);
@@ -64,7 +64,7 @@ public class TaskService : ITaskService
         {
             throw new ArgumentOutOfRangeException(
                 nameof(task.DueDate),
-                $"Task Due Date ({task.DueDate}) cannot exceed Milestone Due Date ({milestone.DueDate}) (BR-03).");
+                $"Task Due Date ({task.DueDate}) cannot exceed Milestone Due Date ({milestone.DueDate}) .");
         }
 
         task.Status = TaskItemStatus.Pending;
@@ -130,16 +130,29 @@ public class TaskService : ITaskService
         return task.Status != TaskItemStatus.Completed && task.DueDate < _clock.CairoToday;
     }
 
-    // Overloads for int freelancerId
-    public Task<bool> AddMilestoneAsync(Milestone milestone, int freelancerId)
-        => AddMilestoneAsync(milestone, freelancerId.ToString());
+    public async Task<bool> UpdateTaskAsync(TaskItem updatedTask,string freelanceId)
+    {
+        var task = await _taskRepository.GetByIdAsync(updatedTask.ID);
+        if(task == null) return false;
 
-    public Task<bool> AddTaskAsync(TaskItem task, int freelancerId)
-        => AddTaskAsync(task, freelancerId.ToString());
+        task.Title = updatedTask.Title;
+        task.Priority = updatedTask.Priority;
+        task.DueDate = updatedTask.DueDate;
+        
+        _taskRepository.Update(task);
+        return await _taskRepository.SaveChangesAsync() > 0;
 
-    public Task<bool> UpdateTaskStatusAsync(int taskId, TaskItemStatus newStatus, int freelancerId)
-        => UpdateTaskStatusAsync(taskId, newStatus, freelancerId.ToString());
+    }
 
-    public Task<List<TaskItem>> GetOverdueTasksAsync(int freelancerId)
-        => GetOverdueTasksAsync(freelancerId.ToString());
+    public async Task<bool> DeleteTaskAsync(int TaskId , string freelanceId)
+    {
+        var task = await _taskRepository.GetByIdAsync(TaskId);
+        if (task == null)return false;
+        _taskRepository.Delete(task);
+        return await _taskRepository.SaveChangesAsync() > 0;
+    }
+
+    
+
+    
 }

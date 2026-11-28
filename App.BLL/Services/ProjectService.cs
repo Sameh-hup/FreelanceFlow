@@ -52,7 +52,7 @@ public class ProjectService : IProjectService
         if (!hasAccess)
             throw new UnauthorizedAccessException("You do not own the selected client.");
 
-        // BR-01: Deadline > StartDate
+        // Deadline > StartDate
         if (project.Deadline <= project.StartDate)
             throw new ArgumentException("Project Deadline must be strictly after the Start Date.");
 
@@ -71,7 +71,7 @@ public class ProjectService : IProjectService
         var project = await _projectRepository.GetByIdAsync(projectId);
         if (project == null) return false;
 
-        // BR-07 / FR-12: Status transitions are manual only
+        // Status transitions are manual only
         project.Status = newStatus;
         _projectRepository.Update(project);
         return await _projectRepository.SaveChangesAsync() > 0;
@@ -85,7 +85,7 @@ public class ProjectService : IProjectService
         var project = await _projectRepository.GetProjectDetailsAsync(projectId, freelancerId);
         if (project == null) return false;
 
-        // BR-06 / FR-13: Check if project has any invoices
+        //  Check if project has any invoices
         if (project.Invoices != null && project.Invoices.Any())
         {
             throw new InvalidOperationException("Cannot delete project with existing invoices. Set status to Cancelled instead.");
@@ -156,19 +156,5 @@ public class ProjectService : IProjectService
         return ProjectHealth.Healthy;
     }
 
-    // Overloads for int freelancerId
-    public Task<List<Project>> GetProjectsAsync(int freelancerId, string? searchName = null)
-        => GetProjectsAsync(freelancerId.ToString(), searchName);
-
-    public Task<Project?> GetProjectDetailsAsync(int projectId, int freelancerId)
-        => GetProjectDetailsAsync(projectId, freelancerId.ToString());
-
-    public Task<bool> CreateProjectAsync(Project project, int freelancerId)
-        => CreateProjectAsync(project, freelancerId.ToString());
-
-    public Task<bool> UpdateProjectStatusAsync(int projectId, ProjectStatus newStatus, int freelancerId)
-        => UpdateProjectStatusAsync(projectId, newStatus, freelancerId.ToString());
-
-    public Task<bool> DeleteProjectAsync(int projectId, int freelancerId)
-        => DeleteProjectAsync(projectId, freelancerId.ToString());
+    
 }

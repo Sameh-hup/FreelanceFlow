@@ -123,7 +123,7 @@ public class AccountController : Controller
             return BadRequest("Invalid invitation token.");
         }
 
-        var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+        var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
         var invitation = await _context.Invitation
             .Include(i => i.Client)
             .FirstOrDefaultAsync(i => i.TokenHash == tokenHash && i.UsedAtUtc == null && i.RevokedAtUtc == null);

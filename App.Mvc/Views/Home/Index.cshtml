@@ -182,7 +182,10 @@
                     {
                         <div class="p-2 border border-danger-subtle bg-danger-subtle rounded-2 d-flex align-items-center justify-content-between">
                             <div>
-                                <div class="fw-medium text-dark text-xs">@task.Title</div>
+                                <div class="fw-medium text-dark text-xs">
+                                    @* @task.Title *@
+                                    <a asp-controller="Projects" asp-action="Details" asp-route-id="@task.Milestone.ProjectID" class="fw-semibold text-dark">@task.Title</a>
+                                </div>
                                 <div class="text-xs text-danger">Due: @task.DueDate.ToString("MMM dd") - Overdue</div>
                             </div>
                             <span class="badge-ff badge-danger badge-sm">@task.Priority</span>

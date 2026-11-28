@@ -16,13 +16,17 @@ public class ClientRepository : Repository<Client>, IClientRepository
         return await _dbSet
             .AsNoTracking()
             .Where(c => c.UserID == freelancerId && !c.IsDeleted)
+            .Include(e=>e.Projects)
             .ToListAsync();
     }
 
     public async Task<Client?> GetClientWithProjectsAsync(int clientId, string freelancerId)
     {
         return await _dbSet
+            .Include(c => c.PortalUser)
             .Include(c => c.Projects)
+                .ThenInclude(p => p.Milestones)
+                    .ThenInclude(m => m.Tasks)
             .FirstOrDefaultAsync(c => c.ID == clientId && c.UserID == freelancerId && !c.IsDeleted);
     }
 }

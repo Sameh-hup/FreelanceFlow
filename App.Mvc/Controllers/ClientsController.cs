@@ -1,4 +1,5 @@
 using App.BLL.Interfaces.Services;
+using App.BLL.Services;
 using App.DAL.Entities;
 using App.Mvc.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -114,6 +115,7 @@ public class ClientsController : Controller
         var client = await _clientService.GetClientByIdAsync(id, freelancerId);
         if (client == null)
             return NotFound();
+      
 
         return View(client);
     }
@@ -147,8 +149,11 @@ public class ClientsController : Controller
 
         try
         {
-            var rawToken = await _authService.GenerateClientInvitationLinkAsync(clientId, clientEmail, freelancerId);
-            var activationUrl = Url.Action("ClientInvite", "Account", new { token = rawToken }, Request.Scheme);
+            var inviteLink = await _authService.GenerateClientInvitationLinkAsync(clientId, clientEmail, freelancerId);
+            //var activationUrl = Url.Action("ClientInvite", "Account", new { token = inviteLink }, Request.Scheme);
+            var activationUrl = inviteLink.StartsWith("http")
+            ? inviteLink
+            : $"{Request.Scheme}://{Request.Host}{inviteLink}";
             TempData["SuccessMessage"] = $"Invitation generated! Activation link: {activationUrl}";
             TempData["InviteLink"] = activationUrl;
         }

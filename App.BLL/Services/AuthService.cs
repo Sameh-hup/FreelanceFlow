@@ -177,12 +177,6 @@ public class AuthService : IAuthService
         return true;
     }
 
-    public Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
-        => ChangePasswordAsync(userId.ToString(), oldPassword, newPassword);
-
-    public Task<string> GenerateClientInvitationLinkAsync(int clientId, string clientEmail, int freelancerId)
-        => GenerateClientInvitationLinkAsync(clientId, clientEmail, freelancerId.ToString());
-
     private static string ComputeSha256Hash(string rawData)
     {
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawData));

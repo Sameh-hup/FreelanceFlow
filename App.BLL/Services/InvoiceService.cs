@@ -200,16 +200,4 @@ public class InvoiceService : IInvoiceService
         return InvoiceStatus.Unpaid;
     }
 
-    // Overloads for int freelancerId
-    public Task<List<Invoice>> GetInvoicesAsync(int freelancerId, string? searchName = null)
-        => GetInvoicesAsync(freelancerId.ToString(), searchName);
-
-    public Task<bool> CreateInvoiceAsync(Invoice invoice, int freelancerId)
-        => CreateInvoiceAsync(invoice, freelancerId.ToString());
-
-    public Task<bool> DeleteInvoiceAsync(int invoiceId, int freelancerId)
-        => DeleteInvoiceAsync(invoiceId, freelancerId.ToString());
-
-    public Task<bool> RecordPaymentAsync(int invoiceId, decimal amount, DateOnly paymentDate, string? notes, int freelancerId)
-        => RecordPaymentAsync(invoiceId, amount, paymentDate, notes, freelancerId.ToString());
-}
+    }

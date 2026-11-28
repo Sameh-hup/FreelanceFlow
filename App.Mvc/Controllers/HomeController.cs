@@ -64,7 +64,7 @@ public class HomeController : Controller
 
         var clients = await _clientService.GetClientsAsync(freelancerId);
         var projects = await _projectService.GetProjectsAsync(freelancerId);
-        var overdueTasks = await _taskService.GetOverdueTasksAsync(freelancerId);
+        List<TaskItem> overdueTasks = await _taskService.GetOverdueTasksAsync(freelancerId);
         var invoices = await _invoiceService.GetInvoicesAsync(freelancerId);
 
         var activeProjects = projects
